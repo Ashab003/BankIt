@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: BankIt_backend
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/FREEPDB1
+    username: BANKAPP
+    password: ashab105
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
