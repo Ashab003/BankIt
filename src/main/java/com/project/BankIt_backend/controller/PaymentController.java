@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
-
     @PostMapping("/transfer")
     public ResponseEntity<String> transferMoney(
             @Valid @RequestBody TransferRequestDTO transferRequestDTO) {
