@@ -1,8 +1,10 @@
 package com.project.BankIt_backend.service;
 
 import com.project.BankIt_backend.dto.RegisterRequestDTO;
+import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Role;
 import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.RoleRepository;
 import com.project.BankIt_backend.repository.UserRepository;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -25,8 +28,13 @@ public class AuthService {
     private RoleRepository roleRepository;
 
     @Autowired
+    private AccountRepository  accountRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AccountService accountService;
     
     
     //FOR REGULAR USER
@@ -58,6 +66,7 @@ public class AuthService {
         // Explicitly calling the repository to insert and generate id and save the user in db
         User savedUser = userRepository.save(user);
 
+        accountRepository.save(accountService.createAccount(savedUser));
         return Optional.of(savedUser);
     }
 

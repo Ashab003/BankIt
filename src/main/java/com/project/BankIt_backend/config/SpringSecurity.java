@@ -30,6 +30,9 @@ public class SpringSecurity {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        System.out.println("SECURITY CONFIG LOADED");
+
         http
                 .csrf(csrf -> csrf.disable())
 

@@ -21,7 +21,7 @@ public class AccountService {
     @Autowired
     private UserRepository userRepository;
 
-    private Account createAccount(User user){
+    public Account createAccount(User user){
         Account account = new Account();
         account.setAccountNo(generateAccountNumber());
         account.setBalance(BigDecimal.ZERO);
@@ -33,11 +33,11 @@ public class AccountService {
         return account;
     }
 
-    private String generateAccountNumber(){
+    public String generateAccountNumber(){
         return String.valueOf((long) (Math.random() * 9_000_000_000L) + 1_000_000_000L);
     }
 
-    private Optional<Account> getDetails(String accountNo){
+    public Optional<Account> getDetails(String accountNo){
         return Optional.of(
                 accountRepository.findByAccountNo(accountNo)
                         .orElseThrow(
@@ -46,7 +46,7 @@ public class AccountService {
         );
     }
 
-    private BigDecimal getCurrentBalance(String accountNo){
+    public BigDecimal getCurrentBalance(String accountNo){
         Account account = accountRepository.findByAccountNo(accountNo)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
