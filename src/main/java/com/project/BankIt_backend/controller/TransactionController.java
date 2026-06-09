@@ -15,14 +15,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TransactionController {
 
-    private final PaymentService paymentService;
-
-    @PostMapping("/transfer")
-    public ResponseEntity<String> transferMoney(
-            @Valid @RequestBody TransferRequestDTO transferRequestDTO) {
-
-        paymentService.transferMoney(transferRequestDTO);
-
-        return ResponseEntity.ok("Transfer completed successfully");
-    }
 }
