@@ -4,6 +4,7 @@ import com.project.BankIt_backend.dto.UpdateUserDTO;
 import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -56,5 +57,18 @@ public class UserService {
 
     public List<User> getAllUsers(){
          return userRepository.findAll();
+    }
+
+    public User getCurrentUser() {
+
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
     }
 }

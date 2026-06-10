@@ -40,7 +40,10 @@ public class TransactionService {
 
 
         return transactionRepository
-                .findBySenderAccount_User_Username(username)
+                .findBySenderAccount_User_UsernameOrReceiverAccount_User_Username(
+                        username,
+                        username
+                )
                 .stream()
                 .map(this::convertToDTO)
                 .toList();
