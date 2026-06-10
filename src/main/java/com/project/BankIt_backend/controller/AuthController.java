@@ -5,6 +5,7 @@ import com.project.BankIt_backend.dto.LoginResponseDTO;
 import com.project.BankIt_backend.dto.RegisterRequestDTO;
 import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.enums.AuditAction;
+import com.project.BankIt_backend.exception.AccountInactiveException;
 import com.project.BankIt_backend.service.AuditLogService;
 import com.project.BankIt_backend.service.AuthService;
 import com.project.BankIt_backend.service.JwtService;
@@ -46,11 +47,12 @@ public class AuthController {
     public ResponseEntity<?> registerAdminUser(@Valid @RequestBody RegisterRequestDTO dto) {
         return ResponseEntity.ok(authService.registerAdmin(dto));
     }
-
+//---------------------------------------------------------------------------------
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+    public ResponseEntity<LoginResponseDTO> login(
+            @Valid @RequestBody LoginRequestDTO request) {
 
-        // 1. Authenticate using the combined username/email field
+        //validate username and password
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsernameOrEmail(),
@@ -58,34 +60,45 @@ public class AuthController {
                 )
         );
 
-        // 2. Load the user details
-        var userDetails = authService.loadUserByUsername(request.getUsernameOrEmail());
-        var jwtToken = jwtService.generateToken(userDetails);
-
-        // 3. Return the proper Response DTO
-        LoginResponseDTO response = new LoginResponseDTO(jwtToken, "LOGIN!!");
-
+        //get user
         User user = userService.getUserByUsernameOrEmail(
                 request.getUsernameOrEmail()
         );
-        //check if deleted or not
 
+        //check if user is active
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
 
-            throw new RuntimeException(
+            throw new AccountInactiveException(
                     "Account is not active"
             );
         }
-        //save log
+
+        //generate jwt token
+        var userDetails =
+                authService.loadUserByUsername(
+                        request.getUsernameOrEmail()
+                );
+
+        var jwtToken =
+                jwtService.generateToken(userDetails);
+
+        //save auditlog
         auditLogService.logAction(
                 user,
                 AuditAction.USER_LOGIN,
                 "User logged in successfully"
         );
 
+        //provide response
+        LoginResponseDTO response =
+                new LoginResponseDTO(
+                        jwtToken,
+                        "Login Successful"
+                );
+
         return ResponseEntity.ok(response);
     }
-
+//---------------------------------------------------------------------------------------
     @GetMapping("/me")
     public String currentUser(Authentication authentication) {
         return """
