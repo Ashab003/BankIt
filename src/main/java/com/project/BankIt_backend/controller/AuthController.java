@@ -68,6 +68,14 @@ public class AuthController {
         User user = userService.getUserByUsernameOrEmail(
                 request.getUsernameOrEmail()
         );
+        //check if deleted or not
+
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+
+            throw new RuntimeException(
+                    "Account is not active"
+            );
+        }
         //save log
         auditLogService.logAction(
                 user,

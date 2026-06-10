@@ -4,6 +4,7 @@ import com.project.BankIt_backend.dto.UpdateUserDTO;
 import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -89,5 +90,30 @@ public class UserService {
                         new RuntimeException(
                                 "User not found: " + usernameOrEmail
                         ));
+    }
+
+    public void deleteUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found with id: " + userId
+                        ));
+
+        if ("DELETED".equalsIgnoreCase(user.getStatus())) {
+            throw new RuntimeException(
+                    "User is already deleted"
+            );
+        }
+
+        user.setStatus("DELETED");
+
+        userRepository.save(user);
+
+        auditLogService.logAction(
+                user,
+                AuditAction.PROFILE_UPDATED,
+                "User account marked as DELETED by admin"
+        );
     }
 }

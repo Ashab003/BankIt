@@ -22,5 +22,7 @@ public enum AuditAction {
 
     WITHDRAWAL,
 
-    PROFILE_UPDATED
+    PROFILE_UPDATED,
+
+    USER_DELETED
 }
