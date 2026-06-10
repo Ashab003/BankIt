@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.entity;
 
+import com.project.BankIt_backend.enums.AuditAction;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,11 @@ public class AuditLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(
+            name = "audit_log_seq",
+            sequenceName = "AUDIT_LOG_SEQ",
+            allocationSize = 1
+    )
     @Column(name = "LOGID")
     private Long logId;
 
@@ -34,13 +40,18 @@ public class AuditLog {
     @JoinColumn(name = "USERID")
     private User user;
 
-    @NonNull
-    @Column(name = "ACTION")
-    private String action;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ACTION", nullable = false)
+    private AuditAction action;
 
     @Column(name = "TIMESTAMP")
     private LocalDateTime timeStamp;
 
     @Column(name = "DESCRIPTION")
     private String description;
+
+    @PrePersist
+    public void prePersist() {
+        this.timeStamp = LocalDateTime.now();
+    }
 }

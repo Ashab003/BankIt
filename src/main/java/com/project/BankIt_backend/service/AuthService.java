@@ -1,20 +1,18 @@
 package com.project.BankIt_backend.service;
 
 import com.project.BankIt_backend.dto.RegisterRequestDTO;
-import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Role;
 import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.RoleRepository;
 import com.project.BankIt_backend.repository.UserRepository;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -35,7 +33,9 @@ public class AuthService {
 
     @Autowired
     private AccountService accountService;
-    
+
+    @Autowired
+    private AuditLogService auditLogService;
     
     //FOR REGULAR USER
     public Optional<User> registerUser(RegisterRequestDTO userDto) {
@@ -67,6 +67,14 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         accountRepository.save(accountService.createAccount(savedUser));
+
+        //save log
+        auditLogService.logAction(
+                savedUser,
+                AuditAction.USER_REGISTERED,
+                "New user registered with username: " + savedUser.getUsername()
+        );
+
         return Optional.of(savedUser);
     }
 
@@ -90,9 +98,15 @@ public class AuthService {
         // Assign the Admin role
         user.getRoles().add(adminRole);
 
-        User savedUser = userRepository.save(user);
+        User savedAdmin = userRepository.save(user);
 
-        return Optional.of(savedUser);
+        auditLogService.logAction(
+                savedAdmin,
+                AuditAction.ADMIN_REGISTERED,
+                "New user registered with username: " + savedAdmin.getUsername()
+        );
+
+        return Optional.of(savedAdmin);
     }
 
     public UserDetails loadUserByUsername(String usernameOrEmail) {

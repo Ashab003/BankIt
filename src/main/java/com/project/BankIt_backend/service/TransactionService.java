@@ -3,7 +3,6 @@ package com.project.BankIt_backend.service;
 import com.project.BankIt_backend.dto.TransactionResponseDTO;
 import com.project.BankIt_backend.entity.Transaction;
 import com.project.BankIt_backend.repository.TransactionRepository;
-import com.project.BankIt_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,6 @@ TRANSACTIONDATE            TIMESTAMP(6)
 @RequiredArgsConstructor
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
 
     public List<TransactionResponseDTO> getAllTransactions() {
         String username = SecurityContextHolder
@@ -61,18 +59,16 @@ public class TransactionService {
     }
 
     public TransactionResponseDTO convertToDTO(Transaction transaction){
-        TransactionResponseDTO dto =
-                new TransactionResponseDTO(
-                        transaction.getTransactionId(),
-                        transaction.getSenderAccount().getAccountNo(),
-                        transaction.getReceiverAccount().getAccountNo(),
-                        transaction.getAmount(),
-                        transaction.getTransactionType(),
-                        transaction.getStatus(),
-                        transaction.getReferenceNumber(),
-                        transaction.getDescription(),
-                        transaction.getTransactionDate()
-                    );
-        return dto;
+        return new TransactionResponseDTO(
+                transaction.getTransactionId(),
+                transaction.getSenderAccount().getAccountNo(),
+                transaction.getReceiverAccount().getAccountNo(),
+                transaction.getAmount(),
+                transaction.getTransactionType(),
+                transaction.getStatus(),
+                transaction.getReferenceNumber(),
+                transaction.getDescription(),
+                transaction.getTransactionDate()
+        );
     }
 }

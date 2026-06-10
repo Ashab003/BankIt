@@ -3,8 +3,12 @@ package com.project.BankIt_backend.controller;
 import com.project.BankIt_backend.dto.LoginRequestDTO;
 import com.project.BankIt_backend.dto.LoginResponseDTO;
 import com.project.BankIt_backend.dto.RegisterRequestDTO;
+import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.enums.AuditAction;
+import com.project.BankIt_backend.service.AuditLogService;
 import com.project.BankIt_backend.service.AuthService;
 import com.project.BankIt_backend.service.JwtService;
+import com.project.BankIt_backend.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +24,16 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
-
+    @Autowired
+    private UserService userService;
     @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     @PostMapping("/register-user")
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegisterRequestDTO dto) {
@@ -56,6 +64,16 @@ public class AuthController {
 
         // 3. Return the proper Response DTO
         LoginResponseDTO response = new LoginResponseDTO(jwtToken, "LOGIN!!");
+
+        User user = userService.getUserByUsernameOrEmail(
+                request.getUsernameOrEmail()
+        );
+        //save log
+        auditLogService.logAction(
+                user,
+                AuditAction.USER_LOGIN,
+                "User logged in successfully"
+        );
 
         return ResponseEntity.ok(response);
     }

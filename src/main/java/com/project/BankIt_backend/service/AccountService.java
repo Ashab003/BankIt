@@ -3,6 +3,7 @@ package com.project.BankIt_backend.service;
 import com.project.BankIt_backend.dto.RegisterRequestDTO;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class AccountService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     public Account createAccount(User user){
         Account account = new Account();
         account.setAccountNo(generateAccountNumber());
@@ -30,6 +34,12 @@ public class AccountService {
         account.setCurrency("INR");
         account.setStatus("ACTIVE");
 
+
+        auditLogService.logAction(
+                user,
+                AuditAction.ACCOUNT_CREATED,
+                "Bank account created with account number: " + account.getAccountNo()
+        );
         return account;
     }
 

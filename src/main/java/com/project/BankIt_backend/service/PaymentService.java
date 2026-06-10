@@ -3,6 +3,7 @@ import com.project.BankIt_backend.dto.TransferRequestDTO;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Transaction;
 import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.TransactionRepository;
 import com.project.BankIt_backend.repository.UserRepository;
@@ -22,6 +23,7 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final AuditLogService auditLogService;
 
     private void verifySenderAccount(Account senderAccount, BigDecimal amount) {
         //✓ Sender account ACTIVE
@@ -55,7 +57,6 @@ public class PaymentService {
             throw new RuntimeException("Receiver account is not active");
         }
     }
-
 
     @Transactional
     public void transferMoney(TransferRequestDTO transferRequestDTO) {
@@ -123,6 +124,13 @@ public class PaymentService {
 
         //9. Save Transaction
         saveTransaction(senderAccount, receiverAccount, transferRequestDTO);
+
+        auditLogService.logAction(
+                senderUser,
+                AuditAction.MONEY_TRANSFERRED,
+                "Transferred ₹" + transferRequestDTO.getAmount() +
+                        " to account " + receiverAccount.getAccountNo()
+        );
     }
 
     public void saveTransaction(

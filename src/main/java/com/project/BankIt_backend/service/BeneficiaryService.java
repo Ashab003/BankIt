@@ -5,6 +5,7 @@ import com.project.BankIt_backend.dto.BeneficiaryResponseDTO;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Beneficiary;
 import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.BeneficiaryRepository;
 import com.project.BankIt_backend.repository.UserRepository;
@@ -23,6 +24,7 @@ public class BeneficiaryService {
     private final UserRepository userRepository;
     private final BeneficiaryRepository beneficiaryRepository;
     private final UserService userService;
+    private final AuditLogService auditLogService;
     public BeneficiaryResponseDTO addBeneficiary(BeneficiaryRequestDTO dto){
         Account recieverAccount = accountRepository
                 .findByAccountNo(
@@ -67,6 +69,12 @@ public class BeneficiaryService {
         beneficiary.setCreatedAt(LocalDateTime.now());
         beneficiaryRepository.save(beneficiary);
 
+        auditLogService.logAction(
+                currentUser,
+                AuditAction.BENEFICIARY_ADDED,
+                "Added beneficiary account: " + beneficiary.getBeneficiaryAccount().getAccountNo()
+        );
+
         return new BeneficiaryResponseDTO(
                 beneficiary.getBeneficiaryId(),
                 beneficiary.getBeneficiaryAccount()
@@ -106,10 +114,15 @@ public class BeneficiaryService {
         }
 
         beneficiaryRepository.delete(beneficiary);
+
+        auditLogService.logAction(
+                currentUser,
+                AuditAction.BENEFICIARY_REMOVED,
+                "Removed beneficiary: " + beneficiary.getUser().getUsername()
+        );
     }
 
-    private BeneficiaryResponseDTO convertToDTO(
-            Beneficiary beneficiary) {
+    private BeneficiaryResponseDTO convertToDTO(Beneficiary beneficiary) {
 
         return new BeneficiaryResponseDTO(
                 beneficiary.getBeneficiaryId(),

@@ -2,6 +2,7 @@ package com.project.BankIt_backend.service;
 
 import com.project.BankIt_backend.dto.UpdateUserDTO;
 import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,8 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuditLogService auditLogService;
 
     public User getUserById(Long id){
         return userRepository.findByUserId(id).orElseThrow(
@@ -47,6 +50,12 @@ public class UserService {
         user.setPassword(encodedPassword);
 
         userRepository.save(user);
+
+        auditLogService.logAction(
+                user,
+                AuditAction.PASSWORD_CHANGED,
+                "Password changed successfully"
+        );
     }
 
     public void deactivateUser(Long id){
@@ -70,5 +79,15 @@ public class UserService {
                 .findByUsername(username)
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
+    }
+
+    public User getUserByUsernameOrEmail(String usernameOrEmail) {
+
+        return userRepository.findByUsername(usernameOrEmail)
+                .or(() -> userRepository.findByEmail(usernameOrEmail))
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found: " + usernameOrEmail
+                        ));
     }
 }
