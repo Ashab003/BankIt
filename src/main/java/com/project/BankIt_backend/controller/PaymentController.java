@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.controller;
 
+import com.project.BankIt_backend.dto.TransactionResponseDTO;
 import com.project.BankIt_backend.dto.TransferRequestDTO;
 import com.project.BankIt_backend.service.PaymentService;
 import jakarta.validation.Valid;
@@ -14,13 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
 public class PaymentController {
+
     private final PaymentService paymentService;
+
     @PostMapping("/transfer")
-    public ResponseEntity<String> transferMoney(
+    public ResponseEntity<TransactionResponseDTO> transferMoney(
             @Valid @RequestBody TransferRequestDTO transferRequestDTO) {
 
-        paymentService.transferMoney(transferRequestDTO);
+        TransactionResponseDTO response = paymentService.transferMoney(transferRequestDTO);
 
-        return ResponseEntity.ok("Transfer completed successfully");
+        return ResponseEntity.ok(response);
     }
 }

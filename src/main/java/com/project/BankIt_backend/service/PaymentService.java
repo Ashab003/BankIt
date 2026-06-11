@@ -1,4 +1,5 @@
 package com.project.BankIt_backend.service;
+import com.project.BankIt_backend.dto.TransactionResponseDTO;
 import com.project.BankIt_backend.dto.TransferRequestDTO;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Transaction;
@@ -59,7 +60,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public void transferMoney(TransferRequestDTO transferRequestDTO) {
+    public TransactionResponseDTO transferMoney(TransferRequestDTO transferRequestDTO) {
 
         // 1. Get logged-in user
         String username = SecurityContextHolder
@@ -123,7 +124,7 @@ public class PaymentService {
         accountRepository.save(receiverAccount);
 
         //9. Save Transaction
-        saveTransaction(senderAccount, receiverAccount, transferRequestDTO);
+        Transaction transaction = saveTransaction(senderAccount, receiverAccount, transferRequestDTO);
 
         auditLogService.logAction(
                 senderUser,
@@ -131,9 +132,21 @@ public class PaymentService {
                 "Transferred ₹" + transferRequestDTO.getAmount() +
                         " to account " + receiverAccount.getAccountNo()
         );
+
+        return new TransactionResponseDTO(
+                transaction.getTransactionId(),
+                transaction.getSenderAccount().getAccountNo(),
+                transaction.getReceiverAccount().getAccountNo(),
+                transaction.getAmount(),
+                transaction.getTransactionType(),
+                transaction.getStatus(),
+                transaction.getReferenceNumber(),
+                transaction.getDescription(),
+                transaction.getTransactionDate()
+        );
     }
 
-    public void saveTransaction(
+    public Transaction saveTransaction(
             Account senderAccount,
             Account receiverAccount,
             TransferRequestDTO transferRequestDTO) {
@@ -164,6 +177,6 @@ public class PaymentService {
                 LocalDateTime.now()
         );
 
-        transactionRepository.save(transaction);
+        return transactionRepository.save(transaction);
     }
 }
