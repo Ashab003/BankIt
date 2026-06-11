@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.controller;
 
+import com.project.BankIt_backend.dto.MyTransactionResponseDTO;
 import com.project.BankIt_backend.dto.TransactionResponseDTO;
 import com.project.BankIt_backend.dto.TransferRequestDTO;
 import com.project.BankIt_backend.entity.Transaction;
@@ -20,13 +21,14 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @GetMapping
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactions() {
+    @GetMapping("/my-transactions")
+    public ResponseEntity<List<MyTransactionResponseDTO>> getAllTransactions() {
 
         return ResponseEntity.ok(
                 transactionService.getAllTransactions()
         );
     }
+
 
 
     @GetMapping("/{transactionId}")

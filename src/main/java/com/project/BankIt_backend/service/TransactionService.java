@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.service;
 
+import com.project.BankIt_backend.dto.MyTransactionResponseDTO;
 import com.project.BankIt_backend.dto.TransactionResponseDTO;
 import com.project.BankIt_backend.entity.Transaction;
 import com.project.BankIt_backend.repository.TransactionRepository;
@@ -30,7 +31,7 @@ TRANSACTIONDATE            TIMESTAMP(6)
 public class TransactionService {
     private final TransactionRepository transactionRepository;
 
-    public List<TransactionResponseDTO> getAllTransactions() {
+    public List<MyTransactionResponseDTO> getAllTransactions() {
         String username = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -43,7 +44,7 @@ public class TransactionService {
                         username
                 )
                 .stream()
-                .map(this::convertToDTO)
+                .map(this::convertToMyTrTDTO)
                 .toList();
 
     }
@@ -55,10 +56,10 @@ public class TransactionService {
                 .orElseThrow(() ->
                         new RuntimeException("Transaction not found"));
 
-        return convertToDTO(transaction);
+        return convertToTrDTO(transaction);
     }
 
-    public TransactionResponseDTO convertToDTO(Transaction transaction){
+    public TransactionResponseDTO convertToTrDTO(Transaction transaction){
         return new TransactionResponseDTO(
                 transaction.getTransactionId(),
                 transaction.getSenderAccount().getAccountNo(),
@@ -71,4 +72,13 @@ public class TransactionService {
                 transaction.getTransactionDate()
         );
     }
+
+    public MyTransactionResponseDTO convertToMyTrTDTO(Transaction transaction){
+        return new MyTransactionResponseDTO(
+                transaction.getReceiverAccount().getUser().getFullName(),
+                transaction.getAmount(),
+                transaction.getTransactionDate()
+        );
+    }
+
 }
