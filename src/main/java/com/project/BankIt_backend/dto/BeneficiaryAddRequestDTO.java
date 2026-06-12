@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class BeneficiaryRequestDTO {
+public class BeneficiaryAddRequestDTO {
 
     @NotBlank(message = "Account number is required")
     private String accountNumber;

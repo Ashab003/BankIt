@@ -1,8 +1,11 @@
 package com.project.BankIt_backend.service;
 
+import com.project.BankIt_backend.dto.BeneficiarySearchResponseDTO;
 import com.project.BankIt_backend.dto.UpdateUserDTO;
+import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.enums.AuditAction;
+import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;

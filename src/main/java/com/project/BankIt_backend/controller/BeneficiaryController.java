@@ -1,9 +1,9 @@
 package com.project.BankIt_backend.controller;
 
-import com.project.BankIt_backend.dto.BeneficiaryRequestDTO;
-import com.project.BankIt_backend.dto.BeneficiaryResponseDTO;
+import com.project.BankIt_backend.dto.BeneficiaryAddRequestDTO;
+import com.project.BankIt_backend.dto.BeneficiaryAddResponseDTO;
+import com.project.BankIt_backend.dto.BeneficiarySearchResponseDTO;
 import com.project.BankIt_backend.dto.MyBeneficiaryResponseDTO;
-import com.project.BankIt_backend.entity.Beneficiary;
 import com.project.BankIt_backend.service.BeneficiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +28,9 @@ public class BeneficiaryController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<BeneficiaryResponseDTO>
+    public ResponseEntity<BeneficiaryAddResponseDTO>
     addBeneficiary(
-            @RequestBody BeneficiaryRequestDTO dto) {
+            @RequestBody BeneficiaryAddRequestDTO dto) {
 
         return ResponseEntity.ok(
                 beneficiaryService.addBeneficiary(dto)
@@ -49,5 +49,12 @@ public class BeneficiaryController {
     public MyBeneficiaryResponseDTO getBeneficiary(
             @PathVariable Long beneficiaryId) {
         return beneficiaryService.getBeneficiary(beneficiaryId);
+    }
+
+    @GetMapping("/search/{accountNumber}")
+    public BeneficiarySearchResponseDTO findUserByAccountNumber(
+            @PathVariable String accountNumber) {
+
+        return beneficiaryService.findUserByAccountNumber(accountNumber);
     }
 }

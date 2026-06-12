@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.controller;
 
+import com.project.BankIt_backend.dto.BeneficiarySearchResponseDTO;
 import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.service.UserService;
 import lombok.RequiredArgsConstructor;

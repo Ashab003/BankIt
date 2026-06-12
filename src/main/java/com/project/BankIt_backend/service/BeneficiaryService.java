@@ -1,7 +1,8 @@
 package com.project.BankIt_backend.service;
 
-import com.project.BankIt_backend.dto.BeneficiaryRequestDTO;
-import com.project.BankIt_backend.dto.BeneficiaryResponseDTO;
+import com.project.BankIt_backend.dto.BeneficiaryAddRequestDTO;
+import com.project.BankIt_backend.dto.BeneficiaryAddResponseDTO;
+import com.project.BankIt_backend.dto.BeneficiarySearchResponseDTO;
 import com.project.BankIt_backend.dto.MyBeneficiaryResponseDTO;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Beneficiary;
@@ -27,7 +28,7 @@ public class BeneficiaryService {
     private final UserService userService;
     private final AuditLogService auditLogService;
 
-    public BeneficiaryResponseDTO addBeneficiary(BeneficiaryRequestDTO dto){
+    public BeneficiaryAddResponseDTO addBeneficiary(BeneficiaryAddRequestDTO dto){
         Account recieverAccount = accountRepository
                 .findByAccountNo(
                         dto.getAccountNumber()
@@ -77,7 +78,7 @@ public class BeneficiaryService {
                 "Added beneficiary account: " + beneficiary.getBeneficiaryAccount().getAccountNo()
         );
 
-        return new BeneficiaryResponseDTO(
+        return new BeneficiaryAddResponseDTO(
                 beneficiary.getBeneficiaryId(),
                 beneficiary.getBeneficiaryAccount()
                         .getUser()
@@ -124,9 +125,9 @@ public class BeneficiaryService {
         );
     }
 
-    private BeneficiaryResponseDTO convertToDTO(Beneficiary beneficiary) {
+    private BeneficiaryAddResponseDTO convertToDTO(Beneficiary beneficiary) {
 
-        return new BeneficiaryResponseDTO(
+        return new BeneficiaryAddResponseDTO(
                 beneficiary.getBeneficiaryId(),
                 beneficiary.getBeneficiaryAccount()
                         .getUser()
@@ -140,7 +141,7 @@ public class BeneficiaryService {
     private MyBeneficiaryResponseDTO convertToMyDTO(Beneficiary beneficiary) {
 
         return new MyBeneficiaryResponseDTO(
-                beneficiary.getBeneficiaryAccount().getAccountId(),
+                beneficiary.getBeneficiaryId(), // ✅ CORRECT
                 beneficiary.getBeneficiaryAccount().getUser().getFullName(),
                 beneficiary.getBeneficiaryAccount().getUser().getEmail(),
                 beneficiary.getBeneficiaryAccount().getUser().getPhoneNumber(),
@@ -170,6 +171,30 @@ public class BeneficiaryService {
                 beneficiaryUser.getEmail(),
                 beneficiaryUser.getPhoneNumber(),
                 beneficiary.getBeneficiaryAccount().getAccountNo()
+        );
+    }
+
+    public BeneficiarySearchResponseDTO findUserByAccountNumber(String accountNumber) {
+
+        Account account = accountRepository
+                .findByAccountNo(accountNumber)
+                .orElseThrow(() ->
+                        new RuntimeException("Account not found"));
+
+        User user = account.getUser();
+
+        User currentUser = userService.getCurrentUser();
+
+        if (account.getUser().getUserId().equals(currentUser.getUserId())) {
+            throw new RuntimeException("You cannot add yourself as beneficiary");
+        }
+
+        return new BeneficiarySearchResponseDTO(
+                user.getUserId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                account.getAccountNo()
         );
     }
 }
