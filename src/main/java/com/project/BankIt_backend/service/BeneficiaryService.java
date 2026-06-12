@@ -2,6 +2,7 @@ package com.project.BankIt_backend.service;
 
 import com.project.BankIt_backend.dto.BeneficiaryRequestDTO;
 import com.project.BankIt_backend.dto.BeneficiaryResponseDTO;
+import com.project.BankIt_backend.dto.MyBeneficiaryResponseDTO;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Beneficiary;
 import com.project.BankIt_backend.entity.User;
@@ -25,6 +26,7 @@ public class BeneficiaryService {
     private final BeneficiaryRepository beneficiaryRepository;
     private final UserService userService;
     private final AuditLogService auditLogService;
+
     public BeneficiaryResponseDTO addBeneficiary(BeneficiaryRequestDTO dto){
         Account recieverAccount = accountRepository
                 .findByAccountNo(
@@ -86,14 +88,14 @@ public class BeneficiaryService {
         );
     }
 
-    public List<BeneficiaryResponseDTO> getMyBeneficiaries() {
+    public List<MyBeneficiaryResponseDTO> getMyBeneficiaries() {
 
         User currentUser = userService.getCurrentUser();
 
         return beneficiaryRepository
                 .findByUser_UserId(currentUser.getUserId())
                 .stream()
-                .map(this::convertToDTO)
+                .map(this::convertToMyDTO)
                 .toList();
     }
 
@@ -132,6 +134,42 @@ public class BeneficiaryService {
                 beneficiary.getBeneficiaryAccount()
                         .getAccountNo(),
                 beneficiary.getCreatedAt()
+        );
+    }
+
+    private MyBeneficiaryResponseDTO convertToMyDTO(Beneficiary beneficiary) {
+
+        return new MyBeneficiaryResponseDTO(
+                beneficiary.getBeneficiaryAccount().getAccountId(),
+                beneficiary.getBeneficiaryAccount().getUser().getFullName(),
+                beneficiary.getBeneficiaryAccount().getUser().getEmail(),
+                beneficiary.getBeneficiaryAccount().getUser().getPhoneNumber(),
+                beneficiary.getBeneficiaryAccount().getAccountNo()
+        );
+    }
+
+    public MyBeneficiaryResponseDTO getBeneficiary(Long beneficiaryId) {
+        User currentUser = userService.getCurrentUser();
+
+        Beneficiary beneficiary = beneficiaryRepository
+                .findById(beneficiaryId)
+                .orElseThrow(() -> new RuntimeException("Beneficiary not found"));
+
+        // Security check
+        if (!beneficiary.getUser().getUserId().equals(currentUser.getUserId())) {
+            throw new RuntimeException("You are not authorized to access this beneficiary");
+        }
+
+        User beneficiaryUser = beneficiary
+                .getBeneficiaryAccount()
+                .getUser();
+
+        return new MyBeneficiaryResponseDTO(
+                beneficiary.getBeneficiaryId(),
+                beneficiaryUser.getFullName(),
+                beneficiaryUser.getEmail(),
+                beneficiaryUser.getPhoneNumber(),
+                beneficiary.getBeneficiaryAccount().getAccountNo()
         );
     }
 }

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BeneficiaryResponseDTO {
 
-    private Long beneficiaryId;
+    private Long accountId;
 
     private String beneficiaryName;
 

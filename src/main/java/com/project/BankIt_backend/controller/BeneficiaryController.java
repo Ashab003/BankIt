@@ -2,6 +2,7 @@ package com.project.BankIt_backend.controller;
 
 import com.project.BankIt_backend.dto.BeneficiaryRequestDTO;
 import com.project.BankIt_backend.dto.BeneficiaryResponseDTO;
+import com.project.BankIt_backend.dto.MyBeneficiaryResponseDTO;
 import com.project.BankIt_backend.entity.Beneficiary;
 import com.project.BankIt_backend.service.BeneficiaryService;
 import lombok.RequiredArgsConstructor;
@@ -37,10 +38,16 @@ public class BeneficiaryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<BeneficiaryResponseDTO>>
+    public ResponseEntity<List<MyBeneficiaryResponseDTO>>
     getAllListOfBeneficiary() {
         return ResponseEntity.ok(
                 beneficiaryService.getMyBeneficiaries()
         );
+    }
+
+    @GetMapping("/{beneficiaryId}")
+    public MyBeneficiaryResponseDTO getBeneficiary(
+            @PathVariable Long beneficiaryId) {
+        return beneficiaryService.getBeneficiary(beneficiaryId);
     }
 }
