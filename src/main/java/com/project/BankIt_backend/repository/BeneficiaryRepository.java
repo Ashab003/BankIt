@@ -9,10 +9,16 @@ import java.util.Optional;
 
 @Repository
 public interface BeneficiaryRepository extends JpaRepository<Beneficiary, Long> {
-    	Optional<Beneficiary> findByUser_userId(Long userId);
+
+	Optional<Beneficiary> findByUser_userId(Long userId);
+
 	List<Beneficiary> findByUser_UserId(Long userId);
-	Optional<Beneficiary>
-	findByUser_UserIdAndBeneficiaryAccount_AccountId(
+
+	Optional<Beneficiary> findByUser_UserIdAndBeneficiaryAccount_AccountId(
 			Long userId,
 			Long accountId
-	);}
+	);
+
+	Long countByUser_UserId(Long userId);
+
+}

@@ -3,8 +3,11 @@ package com.project.BankIt_backend.repository;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,5 +22,32 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     findBySenderAccount_User_UsernameOrReceiverAccount_User_Username(
             String senderUsername,
             String receiverUsername
+    );
+
+    long countBySenderAccountInOrReceiverAccountIn(
+            List<Account> senderAccounts,
+            List<Account> receiverAccounts
+    );
+
+    // Calculates total money sent from the given accounts; returns 0 if no transactions exist.
+    @Query("""
+       SELECT COALESCE(SUM(t.amount),0)
+       FROM Transaction t
+       WHERE t.senderAccount IN :accounts
+       """)
+    BigDecimal getTotalSent(
+            @Param("accounts")
+            List<Account> accounts
+    );
+
+    // Calculates total money received from the given accounts; returns 0 if no transactions exist.
+    @Query("""
+       SELECT COALESCE(SUM(t.amount),0)
+       FROM Transaction t
+       WHERE t.receiverAccount IN :accounts
+       """)
+    BigDecimal getTotalReceived(
+            @Param("accounts")
+            List<Account> accounts
     );
 }
