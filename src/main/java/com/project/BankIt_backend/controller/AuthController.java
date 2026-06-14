@@ -53,6 +53,7 @@ public class AuthController {
             @Valid @RequestBody LoginRequestDTO request) {
 
         //validate username and password
+        //AuthenticationManager handling credentials to AuthenticatorProvider
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsernameOrEmail(),
@@ -73,12 +74,12 @@ public class AuthController {
             );
         }
 
-        //generate jwt token
         var userDetails =
                 authService.loadUserByUsername(
                         request.getUsernameOrEmail()
                 );
 
+        //generate jwt token
         var jwtToken =
                 jwtService.generateToken(userDetails);
 

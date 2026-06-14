@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Statement - BankIt</title>
+    <style>
+        /* PDF specific page settings */
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            font-size: 13px;
+        }
+
+        /* Utility classes for layout */
+        .layout-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+        .layout-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+
+        /* HEADER */
+        .header-table {
+            border-bottom: 3px solid #2554FF;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin: 0;
+            padding: 0;
+        }
+        .logo .bank { color: #2554FF; }
+        .logo .it { color: #1a1a1a; }
+
+        .title-area h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1a1a1a;
+            text-align: right;
+        }
+        .generated-date {
+            margin-top: 5px;
+            font-size: 13px;
+            color: #6b7280;
+            text-align: right;
+        }
+
+        /* INFO SECTION */
+        .info-section {
+            margin-bottom: 30px;
+        }
+        .info-block {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .info-block h3 {
+            margin: 0 0 15px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+        .info-row {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .info-row td {
+            padding-bottom: 8px;
+            font-size: 13px;
+        }
+        .info-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .info-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* SUMMARY CARDS */
+        .summary-section {
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-top: 4px solid #2554FF;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .card-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .card-value {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* TRANSACTION TABLE */
+        .table-section {
+            margin-bottom: 30px;
+        }
+        .table-section h3 {
+            font-size: 16px;
+            margin: 0 0 15px 0;
+            color: #1a1a1a;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+        .data-table thead {
+            background-color: #2554FF;
+            color: #ffffff;
+        }
+        .data-table th {
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        .data-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #1a1a1a;
+            word-wrap: break-word;
+        }
+
+        /* Specific Column Widths */
+        .data-table th:nth-child(1) { width: 15%; }
+        .data-table th:nth-child(2) { width: 15%; }
+        .data-table th:nth-child(3) { width: 18%; }
+        .data-table th:nth-child(4) { width: 22%; }
+        .data-table th:nth-child(5) { width: 15%; text-align: right; }
+        .data-table th:nth-child(6) { width: 15%; text-align: center; }
+
+        .data-table td:nth-child(5) { text-align: right; font-weight: 600; }
+        .data-table td:nth-child(6) { text-align: center; }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        .amount-positive { color: #059669; }
+        .amount-negative { color: #1a1a1a; }
+
+        /* Because badges rely on border-radius padding which PDF Box can struggle with inline, we use simple styled spans */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-completed { background-color: #d1fae5; color: #065f46; }
+        .badge-pending { background-color: #fef3c7; color: #92400e; }
+
+        /* CLOSING SUMMARY */
+        .totals-summary {
+            margin-bottom: 40px;
+        }
+        .totals-box {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .totals-row {
+            width: 100%;
+        }
+        .totals-row td {
+            padding: 6px 0;
+            font-size: 13px;
+        }
+        .border-bottom td {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .final td {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2554FF;
+            padding-top: 12px;
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
+        .contact-info {
+            font-size: 12px;
+            color: #1a1a1a;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .contact-info span {
+            color: #2554FF;
+            margin: 0 10px;
+        }
+        .disclaimer {
+            font-size: 10px;
+            color: #6b7280;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<table class="layout-table header-table">
+    <tr>
+        <td style="vertical-align: bottom;">
+            <div class="logo"><span class="bank">Bank</span><span class="it">It.</span></div>
+        </td>
+        <td style="vertical-align: bottom;" class="title-area">
+            <h1>Account Statement</h1>
+            <div class="generated-date">Generated on: {{GENERATED_DATE}}</div>
+        </td>
+    </tr>
+</table>
+
+<table class="layout-table info-section">
+    <tr>
+        <td style="width: 48%;" class="info-block">
+            <h3>Customer Information</h3>
+            <table class="info-row">
+                <tr>
+                    <td class="info-label">Name:</td>
+                    <td class="info-value">{{FULL_NAME}}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Email:</td>
+                    <td class="info-value">{{EMAIL}}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Phone:</td>
+                    <td class="info-value">{{PHONE_NUMBER}}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Account No:</td>
+                    <td class="info-value">{{ACCOUNT_NUMBER}}</td>
+                </tr>
+            </table>
+        </td>
+        <td style="width: 4%;"></td>
+        <td style="width: 48%;" class="info-block">
+            <h3>Statement Details</h3>
+            <table class="info-row">
+                <tr>
+                    <td class="info-label">Start Date:</td>
+                    <td class="info-value">{{START_DATE}}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">End Date:</td>
+                    <td class="info-value">{{END_DATE}}</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Currency:</td>
+                    <td class="info-value">INR (INDIAN RUPEES)</td>
+                </tr>
+                <tr>
+                    <td class="info-label">Statement Status:</td>
+                    <td class="info-value" style="color: #2554FF;">Verified</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<table class="layout-table summary-section" style="table-layout: fixed;">
+    <tr>
+        <td class="card" style="width: 23%;">
+            <div class="card-title">Current Balance</div>
+            <div class="card-value">{{CURRENT_BALANCE}} INR</div>
+        </td>
+        <td style="width: 2.66%;"></td> <td class="card" style="width: 23%;">
+        <div class="card-title">Total Received</div>
+        <div class="card-value">{{TOTAL_RECEIVED}} INR</div>
+    </td>
+        <td style="width: 2.66%;"></td> <td class="card" style="width: 23%;">
+        <div class="card-title">Total Sent</div>
+        <div class="card-value">{{TOTAL_SENT}} INR</div>
+    </td>
+        <td style="width: 2.66%;"></td> <td class="card" style="width: 23%;">
+        <div class="card-title">Total Transactions</div>
+        <div class="card-value">{{TOTAL_TRANSACTIONS}}</div>
+    </td>
+    </tr>
+</table>
+
+<div class="table-section">
+    <h3>Transaction History</h3>
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Reference</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{TRANSACTION_ROWS}}
+        </tbody>
+    </table>
+</div>
+
+<table class="layout-table totals-summary">
+    <tr>
+        <td style="width: 55%;"></td>
+
+        <td style="width: 45%;" class="totals-box">
+            <table class="totals-row">
+                <tr>
+                    <td class="info-label">Total Received:</td>
+                    <td class="info-value amount-positive">{{TOTAL_RECEIVED}}</td>
+                </tr>
+                <tr class="border-bottom">
+                    <td class="info-label">Total Sent:</td>
+                    <td class="info-value amount-negative">{{TOTAL_SENT}}</td>
+                </tr>
+                <tr class="final">
+                    <td>Closing Balance:</td>
+                    <td class="info-value">{{CLOSING_BALANCE}}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<div class="footer">
+    <div class="contact-info">
+        Support Email: support@bankit.com <span>|</span> Phone: 1-800-BANK-IT-NOW
+    </div>
+    <div class="disclaimer">
+        This statement is system generated and does not require a signature. If you notice any discrepancies, please report them to our support team within 30 days of the statement generated date.
+    </div>
+</div>
+
+</body>
+</html>

@@ -20,20 +20,25 @@ public class ApplicationConfig {
 
     private final UserRepository userRepository;
 
+
+    //we are telling spring how to find a user in database
     @Bean
     public UserDetailsService userDetailsService(){
         return username -> userRepository.findByUsername(username)
                 .orElseThrow(()->new UsernameNotFoundException("User not found"));
     }
 
+    //wiring UserDetailsService and PasswordEncoder together. telling spring to authenticate from PasswordEncoder and use UserServiceDetails to get the user form db
     @Bean
     public AuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder){
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setUserDetailsService(userDetailsService()); //
         authProvider.setPasswordEncoder(passwordEncoder());
         return  authProvider;
     }
 
+    //manages the AuthenticationProvider, when someone wants to log-in,
+    // we handle it to AuthenticaitonManager, which delegates to Authenticaiton Provider
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
         return config.getAuthenticationManager();

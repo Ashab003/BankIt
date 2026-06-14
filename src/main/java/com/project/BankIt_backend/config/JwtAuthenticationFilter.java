@@ -20,6 +20,8 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+
+//intercepts the request before reaching oru controllers
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -44,21 +46,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String JwtToken;
         final String username;
 
-
+        //it looks for Authorization: Bearer <token>
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
+
+            //if the header is missing then doFilterInternal will be like not my problem and
+            // then pass it to springs default filter which will catch it and reject it with a 403 Forbidden
             filterChain.doFilter(request,response);
             return;
         }
 
-        JwtToken = authHeader.substring(7);
+        JwtToken = authHeader.substring(7); // bearer <token> //takes the string after "bearer", basically extracts the token
 
         username = jwtService.extractUsername(JwtToken);
+        //extracts username from the token
 
         //DEBUG PRINT
         System.out.println("TOKEN USERNAME = " + username);
+
+        //double-checking that username and current request have not been authenticated somehow
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
+            //checking if this token is valid//checking if it belongs this to this user and it has not expired
             if (jwtService.isTokenValid(JwtToken, userDetails)) {
+
+                //if everything is valid create this and shove it in SecurityContextHolder
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -67,6 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
+
                 //DEBUG PRINT
                 System.out.println("USER FOUND = " + userDetails.getUsername());
                 System.out.println("AUTHORITIES = " + userDetails.getAuthorities());

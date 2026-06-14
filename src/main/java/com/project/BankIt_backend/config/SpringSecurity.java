@@ -53,6 +53,7 @@ public class SpringSecurity {
 
                 .authenticationProvider(authenticationProvider)
 
+                //putting our custom JWT filter at the very front line before spring security's default username/password filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
