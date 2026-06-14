@@ -11,7 +11,10 @@ import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.BeneficiaryRepository;
 import com.project.BankIt_backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +30,10 @@ public class BeneficiaryService {
     private final BeneficiaryRepository beneficiaryRepository;
     private final UserService userService;
     private final AuditLogService auditLogService;
+    @Autowired
+    private CacheManager cacheManager;
 
+    @Transactional
     public BeneficiaryAddResponseDTO addBeneficiary(BeneficiaryAddRequestDTO dto){
         Account recieverAccount = accountRepository
                 .findByAccountNo(
@@ -36,10 +42,8 @@ public class BeneficiaryService {
                 .orElseThrow(
                         ()->new RuntimeException("ACCOUNT INVALID")
                 );
-        String username = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
+        User user = userService.getCurrentUser();
+        String username = user.getUsername();
 
         User currentUser = userRepository
                 .findByUsername(username)
@@ -77,6 +81,11 @@ public class BeneficiaryService {
                 AuditAction.BENEFICIARY_ADDED,
                 "Added beneficiary account: " + beneficiary.getBeneficiaryAccount().getAccountNo()
         );
+
+
+        cacheManager
+                .getCache("data_analytics")
+                .evict(user.getUserId());
 
         return new BeneficiaryAddResponseDTO(
                 beneficiary.getBeneficiaryId(),

@@ -10,6 +10,8 @@ import com.project.BankIt_backend.repository.TransactionRepository;
 import com.project.BankIt_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,9 @@ public class PaymentService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final AuditLogService auditLogService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     private void verifySenderAccount(Account senderAccount, BigDecimal amount) {
         //✓ Sender account ACTIVE
@@ -132,6 +137,16 @@ public class PaymentService {
                 "Transferred ₹" + transferRequestDTO.getAmount() +
                         " to account " + receiverAccount.getAccountNo()
         );
+
+
+        //delete old values from cache as this method changes the value
+        cacheManager
+                .getCache("data_analytics")
+                .evict(senderUser.getUserId());
+
+        cacheManager
+                .getCache("data_analytics")
+                .evict(receiverUser.getUserId());
 
         return new TransactionResponseDTO(
                 transaction.getTransactionId(),

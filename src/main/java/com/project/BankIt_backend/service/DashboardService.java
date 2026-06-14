@@ -8,6 +8,7 @@ import com.project.BankIt_backend.repository.BeneficiaryRepository;
 import com.project.BankIt_backend.repository.TransactionRepository;
 import com.project.BankIt_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,15 +26,13 @@ public class DashboardService {
 
     private final TransactionRepository transactionRepository;
 
-    public DashboardResponseDTO getDashboard() {
-
-        //get current user
-        User currentUser = userService.getCurrentUser();
-
+    @Cacheable(value = "data_analytics", key = "#userId")
+    public DashboardResponseDTO getDashboard(Long userId) {
+        System.out.println("DASHBOARD METHOD EXECUTED");
         //get list of accounts by the log-ed in user
         List<Account> accounts =
                 accountRepository.findByUser_UserId(
-                        currentUser.getUserId()
+                        userId
                 );
 
         //counts total transactions
@@ -59,7 +58,11 @@ public class DashboardService {
                 .map(Account::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        //get the number of users
+
+        //get the current user
+        User currentUser = userService.getUserById(userId);
+
+        //get the number of users beneficiary
         Long beneficiaryCount =
                 beneficiaryRepository.countByUser_UserId(
                         currentUser.getUserId()
