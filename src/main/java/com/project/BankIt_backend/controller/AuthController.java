@@ -3,38 +3,20 @@ package com.project.BankIt_backend.controller;
 import com.project.BankIt_backend.dto.LoginRequestDTO;
 import com.project.BankIt_backend.dto.LoginResponseDTO;
 import com.project.BankIt_backend.dto.RegisterRequestDTO;
-import com.project.BankIt_backend.entity.User;
-import com.project.BankIt_backend.enums.AuditAction;
-import com.project.BankIt_backend.exception.AccountInactiveException;
-import com.project.BankIt_backend.service.AuditLogService;
-import com.project.BankIt_backend.service.AuthService;
-import com.project.BankIt_backend.service.JwtService;
-import com.project.BankIt_backend.service.UserService;
+import com.project.BankIt_backend.service.AuthenticationService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private AuditLogService auditLogService;
+    private final AuthenticationService authService;
 
     @PostMapping("/register-user")
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegisterRequestDTO dto) {
@@ -47,59 +29,19 @@ public class AuthController {
     public ResponseEntity<?> registerAdminUser(@Valid @RequestBody RegisterRequestDTO dto) {
         return ResponseEntity.ok(authService.registerAdmin(dto));
     }
-//---------------------------------------------------------------------------------
+
+    //---------------------------------------------------------------------------------
+
+    //LOGIN
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(
             @Valid @RequestBody LoginRequestDTO request) {
-
-        //validate username and password
-        //AuthenticationManager handling credentials to AuthenticatorProvider
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsernameOrEmail(),
-                        request.getPassword()
-                )
-        );
-
-        //get user
-        User user = userService.getUserByUsernameOrEmail(
-                request.getUsernameOrEmail()
-        );
-
-        //check if user is active
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
-
-            throw new AccountInactiveException(
-                    "Account is not active"
-            );
-        }
-
-        var userDetails =
-                authService.loadUserByUsername(
-                        request.getUsernameOrEmail()
-                );
-
-        //generate jwt token
-        var jwtToken =
-                jwtService.generateToken(userDetails);
-
-        //save auditlog
-        auditLogService.logAction(
-                user,
-                AuditAction.USER_LOGIN,
-                "User logged in successfully"
-        );
-
-        //provide response
-        LoginResponseDTO response =
-                new LoginResponseDTO(
-                        jwtToken,
-                        "Login Successful"
-                );
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.login(request));
     }
-//---------------------------------------------------------------------------------------
+
+    //LOGOUT is already implemented by LOGOUT HANDLER
+
+    //---------------------------------------------------------------------------------------
     @GetMapping("/me")
     public String currentUser(Authentication authentication) {
         return """
@@ -110,4 +52,5 @@ public class AuthController {
                 authentication.getAuthorities()
         );
     }
+
 }

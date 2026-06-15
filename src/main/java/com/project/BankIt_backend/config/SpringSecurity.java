@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.config;
 
+import com.project.BankIt_backend.service.LogoutService;
 import com.project.BankIt_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,7 +28,7 @@ public class SpringSecurity {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
-
+    private final LogoutService logoutService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -57,7 +59,15 @@ public class SpringSecurity {
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
-                );
+                )
+                .logout(logout -> logout
+                .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(logoutService)
+                .logoutSuccessHandler(
+                        (request, response, authentication) ->
+                                SecurityContextHolder.clearContext()
+                )
+        );
 
         return http.build();
 

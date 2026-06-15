@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.config;
 
+import com.project.BankIt_backend.repository.TokenRepository;
 import com.project.BankIt_backend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(
@@ -67,8 +69,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            //checking if this token is valid//checking if it belongs this to this user and it has not expired
-            if (jwtService.isTokenValid(JwtToken, userDetails)) {
+            //checking if this token is valid
+            // checking if it belongs this to this user, and it has not expired
+            // AND also checking if the token is valid in the database or not
+            if (jwtService.isTokenValid(JwtToken, userDetails) && jwtService.isTokenValidInDB(JwtToken) ) {
 
                 //if everything is valid create this and shove it in SecurityContextHolder
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
