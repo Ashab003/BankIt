@@ -7,6 +7,7 @@ import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.UserRepository;
+import com.project.BankIt_backend.service.AccountService;
 import com.project.BankIt_backend.service.UserService;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class AccountController {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final AccountService accountService;
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<AccountResponseDTO>> accountDetails(
@@ -53,13 +55,10 @@ public class AccountController {
 
         User user = userService.getCurrentUser();
 
-        List<Account> list =
-                accountRepository.findByUser_UserId(user.getUserId());
-
-        Account account = list.getFirst();
-
         return ResponseEntity.ok(
-                new BalanceResponseDTO(account.getBalance())
+                accountService.getBalance(
+                        user.getUserId()
+                )
         );
     }
 }

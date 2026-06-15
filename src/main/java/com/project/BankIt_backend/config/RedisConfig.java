@@ -35,6 +35,7 @@ public class RedisConfig {
         Map<String, RedisCacheConfiguration> specificConfigs = new HashMap<>();
 
         specificConfigs.put("data_analytics", defaultConfig.entryTtl(Duration.ofMinutes(20)));
+        specificConfigs.put("balance", defaultConfig.entryTtl(Duration.ofMinutes(20)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)

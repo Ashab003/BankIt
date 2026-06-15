@@ -147,6 +147,13 @@ public class PaymentService {
         cacheManager
                 .getCache("data_analytics")
                 .evict(receiverUser.getUserId());
+        cacheManager
+                .getCache("balance")
+                .evict(senderUser.getUserId());
+
+        cacheManager
+                .getCache("balance")
+                .evict(receiverUser.getUserId());
 
         return new TransactionResponseDTO(
                 transaction.getTransactionId(),

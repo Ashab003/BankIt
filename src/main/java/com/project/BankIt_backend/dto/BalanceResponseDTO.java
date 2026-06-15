@@ -11,11 +11,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BalanceResponseDTO {
-    private BigDecimal balance;
-    private String currency;
-    private String accountNo;
 
-    public BalanceResponseDTO(BigDecimal balance) {
-        this.balance = balance;
-    }
+    private BigDecimal balance;
+
 }
