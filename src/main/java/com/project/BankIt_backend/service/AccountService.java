@@ -88,7 +88,6 @@ public class AccountService {
     public BigDecimal getCurrentBalance(String accountNo){
         Account account = accountRepository.findByAccountNo(accountNo)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
-
         return account.getBalance();
     }
 }
