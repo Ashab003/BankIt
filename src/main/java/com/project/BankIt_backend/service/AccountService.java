@@ -31,6 +31,8 @@ public class AccountService {
     @Autowired
     private UserService userService;
 
+
+
     public Account createAccount(User user){
         Account account = new Account();
         account.setAccountNo(generateAccountNumber());
@@ -44,6 +46,7 @@ public class AccountService {
         auditLogService.logAction(
                 user,
                 AuditAction.ACCOUNT_CREATED,
+                LocalDateTime.now(),
                 "Bank account created with account number: " + account.getAccountNo()
         );
         return account;

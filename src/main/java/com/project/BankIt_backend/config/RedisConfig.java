@@ -18,7 +18,7 @@ public class RedisConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory){
-        System.out.println("LOADED REDIS CONFIG\n");
+        System.out.println("\nLOADED REDIS CONFIG\n");
         //setting default configurations
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.
                 defaultCacheConfig()
@@ -36,7 +36,7 @@ public class RedisConfig {
 
         specificConfigs.put("data_analytics", defaultConfig.entryTtl(Duration.ofMinutes(20)));
         specificConfigs.put("balance", defaultConfig.entryTtl(Duration.ofMinutes(20)));
-
+        specificConfigs.put("blacklisted_tokens", defaultConfig.entryTtl(Duration.ofMinutes(1)));
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(specificConfigs)

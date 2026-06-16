@@ -1,8 +1,6 @@
 package com.project.BankIt_backend.controller;
 
-import com.project.BankIt_backend.dto.LoginRequestDTO;
-import com.project.BankIt_backend.dto.LoginResponseDTO;
-import com.project.BankIt_backend.dto.RegisterRequestDTO;
+import com.project.BankIt_backend.dto.*;
 import com.project.BankIt_backend.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +40,17 @@ public class AuthController {
     //LOGOUT is already implemented by LOGOUT HANDLER
 
     //---------------------------------------------------------------------------------------
+
+    @PutMapping("/change-password")
+    public ResponseEntity<ChangePasswordResponseDTO> changePassword(
+            @Valid @RequestBody ChangePasswordRequestDTO request) {
+
+        return ResponseEntity.ok(
+                authService.changePassword(request)
+        );
+    }
+
+
     @GetMapping("/me")
     public String currentUser(Authentication authentication) {
         return """

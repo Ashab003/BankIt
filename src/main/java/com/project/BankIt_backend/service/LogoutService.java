@@ -1,5 +1,7 @@
 package com.project.BankIt_backend.service;
 
+import com.project.BankIt_backend.entity.User;
+import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,11 +10,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class LogoutService implements LogoutHandler {
 
     private final TokenRepository tokenRepository;
+    private final AuditLogService auditLogService;
+    private final UserService userService;
 
     @Override
     public void logout(
@@ -32,6 +38,19 @@ public class LogoutService implements LogoutHandler {
             storedToken.setExpired(true);
             storedToken.setRevoked(true);
             tokenRepository.save(storedToken);
+
+            if(authentication != null){
+                User user = userService.getUserByUsername(
+                        authentication.getName()
+                );
+
+                auditLogService.logAction(
+                        user,
+                        AuditAction.USER_LOGOUT,
+                        LocalDateTime.now(),
+                        "User logged out successfully"
+                );
+            }
         }
     }
 }

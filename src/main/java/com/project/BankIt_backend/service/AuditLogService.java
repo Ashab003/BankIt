@@ -22,6 +22,7 @@ public class AuditLogService {
 
     public void logAction(User user,
                           AuditAction action,
+                          LocalDateTime localDateTime,
                           String description) {
 
         AuditLog auditLog = new AuditLog();
@@ -29,7 +30,7 @@ public class AuditLogService {
         auditLog.setUser(user);
         auditLog.setAction(action);
         auditLog.setDescription(description);
-
+        auditLog.setTimeStamp(localDateTime);
         auditLogRepository.save(auditLog);
     }
 

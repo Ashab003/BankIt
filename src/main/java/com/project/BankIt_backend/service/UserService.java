@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,7 @@ public class UserService {
         auditLogService.logAction(
                 user,
                 AuditAction.PASSWORD_CHANGED,
+                LocalDateTime.now(),
                 "Password changed successfully"
         );
     }
@@ -116,6 +118,7 @@ public class UserService {
         auditLogService.logAction(
                 user,
                 AuditAction.PROFILE_UPDATED,
+                LocalDateTime.now(),
                 "User account marked as DELETED by admin"
         );
     }

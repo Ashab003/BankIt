@@ -79,6 +79,7 @@ public class BeneficiaryService {
         auditLogService.logAction(
                 currentUser,
                 AuditAction.BENEFICIARY_ADDED,
+                LocalDateTime.now(),
                 "Added beneficiary account: " + beneficiary.getBeneficiaryAccount().getAccountNo()
         );
 
@@ -130,6 +131,7 @@ public class BeneficiaryService {
         auditLogService.logAction(
                 currentUser,
                 AuditAction.BENEFICIARY_REMOVED,
+                LocalDateTime.now(),
                 "Removed beneficiary: " + beneficiary.getUser().getUsername()
         );
     }

@@ -134,6 +134,7 @@ public class PaymentService {
         auditLogService.logAction(
                 senderUser,
                 AuditAction.MONEY_TRANSFERRED,
+                LocalDateTime.now(),
                 "Transferred ₹" + transferRequestDTO.getAmount() +
                         " to account " + receiverAccount.getAccountNo()
         );

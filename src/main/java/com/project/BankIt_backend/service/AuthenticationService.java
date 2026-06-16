@@ -1,8 +1,6 @@
 package com.project.BankIt_backend.service;
 
-import com.project.BankIt_backend.dto.LoginRequestDTO;
-import com.project.BankIt_backend.dto.LoginResponseDTO;
-import com.project.BankIt_backend.dto.RegisterRequestDTO;
+import com.project.BankIt_backend.dto.*;
 import com.project.BankIt_backend.entity.Role;
 import com.project.BankIt_backend.entity.Token;
 import com.project.BankIt_backend.entity.User;
@@ -13,9 +11,13 @@ import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.RoleRepository;
 import com.project.BankIt_backend.repository.TokenRepository;
 import com.project.BankIt_backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -75,6 +77,7 @@ public class AuthenticationService {
         auditLogService.logAction(
                 savedUser,
                 AuditAction.USER_REGISTERED,
+                LocalDateTime.now(),
                 "New user registered with username: " + savedUser.getUsername()
         );
 
@@ -105,6 +108,7 @@ public class AuthenticationService {
         auditLogService.logAction(
                 savedAdmin,
                 AuditAction.ADMIN_REGISTERED,
+                LocalDateTime.now(),
                 "New user registered with username: " + savedAdmin.getUsername()
         );
 
@@ -159,6 +163,7 @@ public class AuthenticationService {
         auditLogService.logAction(
                 user,
                 AuditAction.USER_LOGIN,
+                LocalDateTime.now(),
                 "User logged in successfully"
         );
 
@@ -168,6 +173,68 @@ public class AuthenticationService {
                 "Login Successful"
         );
 
+    }
+
+
+    @Transactional
+    public ChangePasswordResponseDTO changePassword(
+            ChangePasswordRequestDTO request) {
+
+        //does not authenticate the user, user was authenticated earlier by your JWT filter
+        Authentication authentication = //who is the current authenticated user
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String username = authentication.getName();
+
+        User user = userService.getUserByUsername(username);
+
+        //Check current password
+        if (!passwordEncoder.matches(       //matches and equals are different things, equals compares strings, matches compares hashed versions
+                request.getCurrentPassword(),
+                user.getPassword())) {
+
+            throw new BadCredentialsException(
+                    "Current password is incorrect"
+            );
+        }
+
+        //Check new password confirmation
+        if (!request.getNewPassword()
+                .equals(request.getConfirmPassword())) {
+
+            throw new IllegalArgumentException(
+                    "New password and confirm password do not match"
+            );
+        }
+
+        //prevent reusing same password
+        if (passwordEncoder.matches(
+                request.getNewPassword(),
+                user.getPassword())) {
+
+            throw new IllegalArgumentException(
+                    "New password must be different from current password"
+            );
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(
+                        request.getNewPassword()
+                )
+        );
+
+        userRepository.save(user);
+
+        auditLogService.logAction(
+                user,
+                AuditAction.PASSWORD_CHANGED,
+                LocalDateTime.now(),
+                "User changed password successfully"
+        );
+
+        return new ChangePasswordResponseDTO(
+                "Password updated successfully"
+        );
     }
 
     private void saveUserToken(String jwtToken, User user) {
@@ -198,3 +265,5 @@ public class AuthenticationService {
 
     }
 }
+
+
