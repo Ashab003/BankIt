@@ -36,6 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     )
             throws ServletException, IOException {
+
         System.out.println(
                 "REQUEST -> "
                         + request.getMethod()
@@ -70,9 +71,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             //checking if this token is valid
-            // checking if it belongs this to this user, and it has not expired
-            // AND also checking if the token is valid in the database or not
-            if (jwtService.isTokenValid(JwtToken, userDetails) && jwtService.isTokenValidInDB(JwtToken) ) {
+            // checking if it belongs this to this user, and
+            // if it is in redis ,ig blacklisted token then not authorized
+
+            if (jwtService.isTokenValid(JwtToken, userDetails) && !jwtService.isTokenBlacklisted(JwtToken)) {
 
                 //if everything is valid create this and shove it in SecurityContextHolder
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

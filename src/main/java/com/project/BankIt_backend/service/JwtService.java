@@ -1,14 +1,14 @@
 package com.project.BankIt_backend.service;
 
-import com.project.BankIt_backend.entity.Token;
-import com.project.BankIt_backend.repository.TokenRepository;
-import com.project.BankIt_backend.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,9 @@ import java.util.function.Function;
 public class JwtService {
 
     private static final String SECURITY_KEY = "4960137a1d03c27ead415d28fb5341f94567ac82a89d4c0be4ad9e73903a1bd3";
-    private final TokenRepository tokenRepository;
+
+    private final RedisTemplate<String, String> redisTemplate;
+
 
     //takes the SECURITY_KEY assumes it is encoded in base64, decodes it into bytes[] and
     // converts it into a specialized cryptographic secret key using HMAC-SHA algorithm
@@ -106,22 +108,32 @@ public class JwtService {
     }
 
 
-    public boolean isTokenValidInDB(String token){
-        return  tokenRepository.findByToken(token)
-                .map(t -> !t.isExpired() && !t.isRevoked())
-                .orElse(false);
+    @Bean
+    public RedisTemplate<String, String> redisTemplate(
+            RedisConnectionFactory connectionFactory
+    ) {
+
+        RedisTemplate<String, String> template =
+                new RedisTemplate<>();
+
+        template.setConnectionFactory(connectionFactory);
+
+        return template;
+    }
+
+    public boolean isTokenBlacklisted(String token){
+        return Boolean.TRUE.equals(
+                redisTemplate.hasKey(token)
+        );
     }
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token) {
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
-
-
-
 
 }
 

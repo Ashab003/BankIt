@@ -1,24 +1,26 @@
 package com.project.BankIt_backend.service;
 
-import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.enums.AuditAction;
-import com.project.BankIt_backend.repository.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
 public class LogoutService implements LogoutHandler {
 
-    private final TokenRepository tokenRepository;
-    private final AuditLogService auditLogService;
     private final UserService userService;
+    private final RedisTemplate redisTemplate;
+    private final JwtService jwtService;
+    private final AuditLogService auditLogService;
 
     @Override
     public void logout(
@@ -27,30 +29,36 @@ public class LogoutService implements LogoutHandler {
             Authentication authentication
     ){
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
             return;
         }
-        jwt = authHeader.substring(7);
-        var storedToken = tokenRepository.findByToken(jwt).orElse(null);
 
-        if(storedToken != null){
-            storedToken.setExpired(true);
-            storedToken.setRevoked(true);
-            tokenRepository.save(storedToken);
 
-            if(authentication != null){
-                User user = userService.getUserByUsername(
-                        authentication.getName()
-                );
+        String jwt = authHeader.substring(7);
 
-                auditLogService.logAction(
-                        user,
-                        AuditAction.USER_LOGOUT,
-                        LocalDateTime.now(),
-                        "User logged out successfully"
-                );
-            }
+        Date expirationDate =
+                jwtService.extractExpiration(jwt);
+
+        long remainingMillis =
+                expirationDate.getTime()
+                        - System.currentTimeMillis();
+
+        if(remainingMillis > 0){
+            redisTemplate.opsForValue().set(
+                    jwt,
+                    "BLACKLISTED",
+                    remainingMillis,
+                    TimeUnit.MILLISECONDS
+            );
         }
+
+        auditLogService.logAction(
+                userService.getUserByUsername(jwtService.extractUsername(jwt)),
+                AuditAction.USER_LOGOUT,
+                LocalDateTime.now(),
+                "User has succesully loged out"
+        );
+
     }
 }
+
