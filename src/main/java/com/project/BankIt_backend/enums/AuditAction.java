@@ -8,6 +8,8 @@ public enum AuditAction {
 
     USER_LOGIN,
 
+    USER_LOGOUT,
+
     PASSWORD_CHANGED,
 
     ACCOUNT_CREATED,

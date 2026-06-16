@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.service;
 
+import com.project.BankIt_backend.enums.AuditAction;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class LogoutService implements LogoutHandler {
     private final UserService userService;
     private final RedisTemplate redisTemplate;
     private final JwtService jwtService;
+    private final AuditLogService auditLogService;
 
     @Override
     public void logout(
@@ -47,6 +49,12 @@ public class LogoutService implements LogoutHandler {
                     TimeUnit.MILLISECONDS
             );
         }
+
+        auditLogService.logAction(
+                userService.getUserByUsername(jwtService.extractUsername(jwt)),
+                AuditAction.USER_LOGOUT,
+                "User has succesully loged out "
+        );
 
     }
 }
