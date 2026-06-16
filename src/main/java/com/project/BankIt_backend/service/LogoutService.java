@@ -53,7 +53,7 @@ public class LogoutService implements LogoutHandler {
         auditLogService.logAction(
                 userService.getUserByUsername(jwtService.extractUsername(jwt)),
                 AuditAction.USER_LOGOUT,
-                "User has succesully loged out "
+                "User has succesully loged out"
         );
 
     }
