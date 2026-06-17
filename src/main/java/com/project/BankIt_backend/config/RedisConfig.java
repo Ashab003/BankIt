@@ -36,7 +36,7 @@ public class RedisConfig {
 
         specificConfigs.put("data_analytics", defaultConfig.entryTtl(Duration.ofMinutes(20)));
         specificConfigs.put("balance", defaultConfig.entryTtl(Duration.ofMinutes(20)));
-        specificConfigs.put("blacklisted_tokens", defaultConfig.entryTtl(Duration.ofMinutes(1)));
+        specificConfigs.put("user_details", defaultConfig.entryTtl(Duration.ofMinutes(30)));
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(specificConfigs)

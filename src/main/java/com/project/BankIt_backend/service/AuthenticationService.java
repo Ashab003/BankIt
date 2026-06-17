@@ -13,6 +13,7 @@ import com.project.BankIt_backend.repository.TokenRepository;
 import com.project.BankIt_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -115,8 +116,12 @@ public class AuthenticationService {
         return Optional.of(savedAdmin);
     }
 
+    @Cacheable(
+            value = "user_details",
+            key = "#usernameOrEmail"
+    )
     public UserDetails loadUserByUsername(String usernameOrEmail) {
-        // Your existing logic to fetch the user from the repository...
+        //fetch the user from the repository
         return userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }

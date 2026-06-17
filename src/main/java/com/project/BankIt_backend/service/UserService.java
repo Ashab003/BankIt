@@ -8,7 +8,11 @@ import com.project.BankIt_backend.enums.AuditAction;
 import com.project.BankIt_backend.repository.AccountRepository;
 import com.project.BankIt_backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,13 +23,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private AuditLogService auditLogService;
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
+    private final CacheManager cacheManager;
 
     public User getUserById(Long id){
         return userRepository.findByUserId(id).orElseThrow(
@@ -33,6 +37,10 @@ public class UserService {
         );
     }
 
+    @Cacheable(
+            value = "user_details",
+            key = "#username"
+    )
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username).orElseThrow(
                 ()-> new RuntimeException(("User Not found with the Username: " + username))
@@ -56,6 +64,9 @@ public class UserService {
 
         userRepository.save(user);
 
+        cacheManager.getCache("user_details")
+                .evict(user.getUsername());
+
         auditLogService.logAction(
                 user,
                 AuditAction.PASSWORD_CHANGED,
@@ -68,11 +79,16 @@ public class UserService {
         User user = getUserById(id);
 
         user.setStatus("NOT_ACTIVE");
+        userRepository.save(user);
+
+        cacheManager.getCache("user_details")
+                .evict(user.getUsername());
     }
 
     public List<User> getAllUsers(){
          return userRepository.findAll();
     }
+
 
     public User getCurrentUser() {
 
