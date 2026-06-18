@@ -2,6 +2,7 @@ package com.project.BankIt_backend.controller;
 
 import com.project.BankIt_backend.dto.*;
 import com.project.BankIt_backend.service.AuthenticationService;
+import com.project.BankIt_backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthenticationService authService;
+    private final UserService userService;
 
     @PostMapping("/register-user")
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegisterRequestDTO dto) {
@@ -52,13 +54,9 @@ public class AuthController {
 
 
     @GetMapping("/me")
-    public String currentUser(Authentication authentication) {
-        return """
-            Username: %s
-            Authorities: %s
-            """.formatted(
-                authentication.getName(),
-                authentication.getAuthorities()
+    public ResponseEntity<FullNameResponseDTO> currentUser() {
+        return ResponseEntity.ok(
+                userService.getUserFullName()
         );
     }
 

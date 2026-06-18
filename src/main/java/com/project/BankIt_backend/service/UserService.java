@@ -1,6 +1,7 @@
 package com.project.BankIt_backend.service;
 
 import com.project.BankIt_backend.dto.BeneficiarySearchResponseDTO;
+import com.project.BankIt_backend.dto.FullNameResponseDTO;
 import com.project.BankIt_backend.dto.UpdateUserDTO;
 import com.project.BankIt_backend.entity.Account;
 import com.project.BankIt_backend.entity.User;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,10 +39,6 @@ public class UserService {
         );
     }
 
-    @Cacheable(
-            value = "user_details",
-            key = "#username"
-    )
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username).orElseThrow(
                 ()-> new RuntimeException(("User Not found with the Username: " + username))
@@ -101,6 +99,12 @@ public class UserService {
                 .findByUsername(username)
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
+    }
+
+    public FullNameResponseDTO getUserFullName() {
+        return new FullNameResponseDTO(
+               getCurrentUser().getFullName()
+        );
     }
 
     public User getUserByUsernameOrEmail(String usernameOrEmail) {

@@ -24,6 +24,7 @@ public class AuditLogService {
                           AuditAction action,
                           LocalDateTime localDateTime,
                           String description) {
+        System.out.println("\n LOGOUT ACTION \n");
 
         AuditLog auditLog = new AuditLog();
 
@@ -32,6 +33,10 @@ public class AuditLogService {
         auditLog.setDescription(description);
         auditLog.setTimeStamp(localDateTime);
         auditLogRepository.save(auditLog);
+
+        AuditLog saved = auditLogRepository.save(auditLog);
+
+        System.out.println("\nAUDIT ID = " + saved.getLogId() + "\n");
     }
 
 

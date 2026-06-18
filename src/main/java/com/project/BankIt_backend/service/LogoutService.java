@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.service;
 
+import com.project.BankIt_backend.entity.User;
 import com.project.BankIt_backend.enums.AuditAction;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,6 +29,8 @@ public class LogoutService implements LogoutHandler {
             HttpServletResponse response,
             Authentication authentication
     ){
+        System.out.println("\nLOGOUT HANDLER EXECUTED\n");
+
         final String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
             return;
@@ -52,11 +55,17 @@ public class LogoutService implements LogoutHandler {
             );
         }
 
+        String username =
+                jwtService.extractUsername(jwt);
+
+        User user =
+                userService.getUserByUsername(username);
+
         auditLogService.logAction(
-                userService.getUserByUsername(jwtService.extractUsername(jwt)),
+                user,
                 AuditAction.USER_LOGOUT,
                 LocalDateTime.now(),
-                "User has succesully loged out"
+                "User logged out successfully"
         );
 
     }
