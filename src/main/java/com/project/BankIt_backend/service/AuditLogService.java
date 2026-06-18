@@ -32,7 +32,6 @@ public class AuditLogService {
         auditLog.setAction(action);
         auditLog.setDescription(description);
         auditLog.setTimeStamp(localDateTime);
-        auditLogRepository.save(auditLog);
 
         AuditLog saved = auditLogRepository.save(auditLog);
 
