@@ -96,7 +96,6 @@ public class PaymentController {
     @GetMapping("/outgoing-request-lists")
     public ResponseEntity<List<OutgoingRequest_ResponseDTO>> loadOutgoingRequest(){
 
-
         return ResponseEntity.ok(
                 paymentService.listOfOutgoingRequest()
         );
