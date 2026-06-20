@@ -3,12 +3,19 @@ package com.project.BankIt_backend.payment;
 import com.project.BankIt_backend.common.enums.RequestStatus;
 import com.project.BankIt_backend.user.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 @Table(name = "PAYMENT_REQUESTS")
 public class PaymentRequest {
 

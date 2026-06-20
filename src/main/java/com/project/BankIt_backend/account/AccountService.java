@@ -88,4 +88,16 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException("Account not found"));
         return account.getBalance();
     }
+
+    public Account getUserAccount(User user) {
+
+        return accountRepository
+                .findByUser_UserId(user.getUserId())
+                .stream()
+                .findFirst()
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Account not found"
+                        ));
+    }
 }

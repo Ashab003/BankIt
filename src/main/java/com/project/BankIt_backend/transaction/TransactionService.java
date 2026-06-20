@@ -1,8 +1,9 @@
 package com.project.BankIt_backend.transaction;
 
+import com.project.BankIt_backend.account.Account;
 import com.project.BankIt_backend.transaction.dto.MyTransactionResponseDTO;
 import com.project.BankIt_backend.transaction.dto.PaginatedTransactionResponseDTO;
-import com.project.BankIt_backend.transaction.dto.TransactionResponseDTO;
+import com.project.BankIt_backend.payment.dto.TransactionResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -125,4 +128,48 @@ public class TransactionService {
         );
     }
 
+    public Transaction saveTransaction(
+            Account senderAccount,
+            Account receiverAccount,
+            BigDecimal amount,
+            String description
+    ) {
+
+        Transaction transaction =
+                new Transaction();
+
+        transaction.setSenderAccount(
+                senderAccount
+        );
+
+        transaction.setReceiverAccount(
+                receiverAccount
+        );
+
+        transaction.setAmount(amount);
+
+        transaction.setTransactionType(
+                "TRANSFER"
+        );
+
+        transaction.setStatus(
+                "SUCCESS"
+        );
+
+        transaction.setReferenceNumber(
+                "CR7-" +
+                        System.currentTimeMillis()
+        );
+
+        transaction.setDescription(
+                description
+        );
+
+        transaction.setTransactionDate(
+                LocalDateTime.now()
+        );
+
+        return transactionRepository
+                .save(transaction);
+    }
 }

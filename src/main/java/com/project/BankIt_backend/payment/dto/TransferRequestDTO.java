@@ -1,4 +1,4 @@
-package com.project.BankIt_backend.transaction.dto;
+package com.project.BankIt_backend.payment.dto;
 
 import lombok.Data;
 

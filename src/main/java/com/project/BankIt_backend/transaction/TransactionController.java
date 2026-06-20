@@ -1,7 +1,7 @@
 package com.project.BankIt_backend.transaction;
 
 import com.project.BankIt_backend.transaction.dto.PaginatedTransactionResponseDTO;
-import com.project.BankIt_backend.transaction.dto.TransactionResponseDTO;
+import com.project.BankIt_backend.payment.dto.TransactionResponseDTO;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
