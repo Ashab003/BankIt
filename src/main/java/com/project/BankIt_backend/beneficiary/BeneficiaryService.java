@@ -6,6 +6,7 @@ import com.project.BankIt_backend.beneficiary.dto.BeneficiarySearchResponseDTO;
 import com.project.BankIt_backend.beneficiary.dto.MyBeneficiaryResponseDTO;
 import com.project.BankIt_backend.account.Account;
 import com.project.BankIt_backend.audit.AuditLogService;
+import com.project.BankIt_backend.common.exception.AccountNotFoundException;
 import com.project.BankIt_backend.user.User;
 import com.project.BankIt_backend.common.enums.AuditAction;
 import com.project.BankIt_backend.account.AccountRepository;
@@ -189,7 +190,7 @@ public class BeneficiaryService {
         Account account = accountRepository
                 .findByAccountNo(accountNumber)
                 .orElseThrow(() ->
-                        new RuntimeException("Account not found"));
+                        new AccountNotFoundException("Account not found"));
 
         User user = account.getUser();
 

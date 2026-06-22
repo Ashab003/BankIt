@@ -1,12 +1,11 @@
 package com.project.BankIt_backend.common.exception;
 
+import com.project.BankIt_backend.common.exception.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,35 +32,90 @@ public class GlobalExceptionHandler {
                 .body(errors);
     }
 
-    // Runtime Exceptions
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(
-            RuntimeException ex) {
-
-        Map<String, String> error = new HashMap<>();
-
-        error.put("error", ex.getMessage());
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(
+            Exception ex) {
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(error);
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                        new ErrorResponse(
+                                "INTERNAL_SERVER_ERROR",
+                                "An unexpected error occurred"
+                        )
+                );
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentials(
+    public ResponseEntity<ErrorResponse> handleBadCredentials(
             BadCredentialsException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body("Invalid username/email or password");
+                .body(
+                        new ErrorResponse(
+                                "BAD_CREDENTIALS",
+                                ex.getMessage()
+                        )
+                );
     }
 
     @ExceptionHandler(AccountInactiveException.class)
-    public ResponseEntity<String> handleAccountInactive(
+    public ResponseEntity<ErrorResponse> handleAccountInactive(
             AccountInactiveException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(ex.getMessage());
+                .body(
+                        new ErrorResponse(
+                                "ACCOUNT_INACTIVE",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<ErrorResponse> accountNotFound(
+            AccountNotFoundException ex
+    ){
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
+                        new ErrorResponse(
+                                "ACCOUNT_NOT_FOUND",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> illegalArgument(
+            IllegalArgumentException ex
+    ){
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        new ErrorResponse(
+                                "BAD_REQUEST",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(InvalidRole.class)
+    public ResponseEntity<ErrorResponse> invalidRole(
+            InvalidRole ex
+    ){
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        new ErrorResponse(
+                                "INVALID_ROLE",
+                                ex.getMessage()
+                        )
+                );
     }
 }

@@ -3,6 +3,8 @@ package com.project.BankIt_backend.auth;
 import com.project.BankIt_backend.auth.dto.LoginRequestDTO;
 import com.project.BankIt_backend.auth.dto.LoginResponseDTO;
 import com.project.BankIt_backend.auth.dto.RegisterRequestDTO;
+import com.project.BankIt_backend.common.exception.BadCredentialsException;
+import com.project.BankIt_backend.common.exception.InvalidRole;
 import com.project.BankIt_backend.user.Role;
 import com.project.BankIt_backend.user.User;
 import com.project.BankIt_backend.common.enums.AuditAction;
@@ -21,7 +23,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -69,7 +70,7 @@ public class AuthenticationService {
 
         // Fetch the existing role from database
         Role customerRole = roleRepository.findByRoleName("CUSTOMER")
-                .orElseThrow(() -> new RuntimeException("Error: Role not found in database."));
+                .orElseThrow(() -> new InvalidRole("Error: Role not found in database."));
 
         // Link the role to this specific user object
         // (Assuming you initialized 'roles = new HashSet<>()' in your User entity)
