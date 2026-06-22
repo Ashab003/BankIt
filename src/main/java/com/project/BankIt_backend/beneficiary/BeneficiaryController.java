@@ -5,6 +5,8 @@ import com.project.BankIt_backend.beneficiary.dto.BeneficiaryAddResponseDTO;
 import com.project.BankIt_backend.beneficiary.dto.BeneficiarySearchResponseDTO;
 import com.project.BankIt_backend.beneficiary.dto.MyBeneficiaryResponseDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,28 +19,27 @@ public class BeneficiaryController {
     private final BeneficiaryService beneficiaryService;
 
     @DeleteMapping("/{beneficiaryId}")
-    public ResponseEntity<String> removeBeneficiary(
+    public ResponseEntity<Void> removeBeneficiary(
             @PathVariable Long beneficiaryId) {
 
         beneficiaryService.removeBeneficiary(beneficiaryId);
 
-        return ResponseEntity.ok(
-                "Beneficiary removed successfully");
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/add")
-    public ResponseEntity<BeneficiaryAddResponseDTO>
-    addBeneficiary(
+    public ResponseEntity<BeneficiaryAddResponseDTO> addBeneficiary(
             @RequestBody BeneficiaryAddRequestDTO dto) {
 
-        return ResponseEntity.ok(
-                beneficiaryService.addBeneficiary(dto)
-        );
+        BeneficiaryAddResponseDTO response =
+                beneficiaryService.addBeneficiary(dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<MyBeneficiaryResponseDTO>>
-    getAllListOfBeneficiary() {
+    public ResponseEntity<List<MyBeneficiaryResponseDTO>> getAllListOfBeneficiary() {
         return ResponseEntity.ok(
                 beneficiaryService.getMyBeneficiaries()
         );
