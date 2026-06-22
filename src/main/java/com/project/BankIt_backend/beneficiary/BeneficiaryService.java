@@ -6,7 +6,7 @@ import com.project.BankIt_backend.beneficiary.dto.BeneficiarySearchResponseDTO;
 import com.project.BankIt_backend.beneficiary.dto.MyBeneficiaryResponseDTO;
 import com.project.BankIt_backend.account.Account;
 import com.project.BankIt_backend.audit.AuditLogService;
-import com.project.BankIt_backend.common.exception.AccountNotFoundException;
+import com.project.BankIt_backend.common.exception.*;
 import com.project.BankIt_backend.user.User;
 import com.project.BankIt_backend.common.enums.AuditAction;
 import com.project.BankIt_backend.account.AccountRepository;
@@ -40,7 +40,7 @@ public class BeneficiaryService {
                         dto.getAccountNumber()
                 )
                 .orElseThrow(
-                        ()->new RuntimeException("ACCOUNT INVALID")
+                        ()->new AccountNotFoundException("ACCOUNT INVALID")
                 );
         User user = userService.getCurrentUser();
         String username = user.getUsername();
@@ -48,14 +48,14 @@ public class BeneficiaryService {
         User currentUser = userRepository
                 .findByUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UsernameNotFoundException("User not found"));
 
         //cant add itself
         if(currentUser.getUserId().equals(
                 recieverAccount.getUser().getUserId())) {
 
-            throw new RuntimeException(
-                    "Cannot add yourself as beneficiary");
+            throw new InvalidBeneficiaryException(
+                    "The entered account belongs to you. Please enter a different account number.");
         }
 
         beneficiaryRepository
@@ -65,8 +65,8 @@ public class BeneficiaryService {
                 )
                 .ifPresent(b ->
                 {
-                    throw new RuntimeException(
-                            "Beneficiary already exists");
+                    throw new BeneficiaryAlreadyExists(
+                            "This beneficiary has already been added to your account.");
                 });
 
         Beneficiary beneficiary = new Beneficiary();
@@ -117,13 +117,13 @@ public class BeneficiaryService {
         Beneficiary beneficiary = beneficiaryRepository
                 .findById(beneficiaryId)
                 .orElseThrow(() ->
-                        new RuntimeException("Beneficiary not found"));
+                        new BeneficiaryNotFoundException("Beneficiary not found"));
 
         if (!beneficiary.getUser().getUserId()
                 .equals(currentUser.getUserId())) {
 
-            throw new RuntimeException(
-                    "You cannot delete another user's beneficiary");
+            throw new BeneficiaryUnauthorizedAccessException(
+                    "You are not authorized to delete this beneficiary.");
         }
 
         beneficiaryRepository.delete(beneficiary);
@@ -165,11 +165,11 @@ public class BeneficiaryService {
 
         Beneficiary beneficiary = beneficiaryRepository
                 .findById(beneficiaryId)
-                .orElseThrow(() -> new RuntimeException("Beneficiary not found"));
+                .orElseThrow(() -> new BeneficiaryNotFoundException("Beneficiary not found"));
 
         // Security check
         if (!beneficiary.getUser().getUserId().equals(currentUser.getUserId())) {
-            throw new RuntimeException("You are not authorized to access this beneficiary");
+            throw new BeneficiaryUnauthorizedAccessException("You are not authorized to access this beneficiary");
         }
 
         User beneficiaryUser = beneficiary
@@ -190,7 +190,7 @@ public class BeneficiaryService {
         Account account = accountRepository
                 .findByAccountNo(accountNumber)
                 .orElseThrow(() ->
-                        new AccountNotFoundException("Account not found"));
+                        new InvalidBeneficiaryException("Account not found"));
 
         User user = account.getUser();
 

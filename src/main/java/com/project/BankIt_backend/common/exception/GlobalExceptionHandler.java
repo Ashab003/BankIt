@@ -118,4 +118,66 @@ public class GlobalExceptionHandler {
                         )
                 );
     }
+
+    @ExceptionHandler(BeneficiaryAlreadyExists.class)
+    public ResponseEntity<ErrorResponse> beneficiaryAlreadyExists(
+            BeneficiaryAlreadyExists ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(
+                        new ErrorResponse(
+                                "BENEFICIARY_ALREADY_EXISTS",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(BeneficiaryUnauthorizedAccessException.class)
+    public ResponseEntity<ErrorResponse> beneficiaryAccessDenied(
+            BeneficiaryUnauthorizedAccessException ex
+    ){
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+                        new ErrorResponse(
+                                "BENEFICIARY_ACCESS_DENIED",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(InvalidBeneficiaryException.class)
+    public ResponseEntity<ErrorResponse> invalidBeneficiary(
+            InvalidBeneficiaryException ex
+    ){
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                        new ErrorResponse(
+                                "INVALID_BENEFICIARY",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(BeneficiaryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> beneficiaryNotFound(
+            BeneficiaryNotFoundException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
+                        new ErrorResponse(
+                                "BENEFICIARY_NOT_FOUND",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+
 }
