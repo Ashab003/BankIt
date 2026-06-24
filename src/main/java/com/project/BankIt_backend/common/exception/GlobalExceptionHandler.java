@@ -79,6 +79,8 @@ public class GlobalExceptionHandler {
             AccountNotFoundException ex
     ){
 
+        System.out.println("\nACCOUNT_NOT_FOUND\n");
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(
@@ -124,6 +126,7 @@ public class GlobalExceptionHandler {
             BeneficiaryAlreadyExists ex
     ) {
 
+        System.out.println("\nBENEFICIARY_ALREADY_EXISTS\n");
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(
@@ -153,6 +156,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> invalidBeneficiary(
             InvalidBeneficiaryException ex
     ){
+        System.out.println("\nINVALID_BENEFICAIRY_HIT\n");
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

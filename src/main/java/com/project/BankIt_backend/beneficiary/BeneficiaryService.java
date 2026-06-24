@@ -35,6 +35,9 @@ public class BeneficiaryService {
 
     @Transactional
     public BeneficiaryAddResponseDTO addBeneficiary(BeneficiaryAddRequestDTO dto){
+
+        System.out.println("\nADD BENEFICIARY HIT\n");
+
         Account recieverAccount = accountRepository
                 .findByAccountNo(
                         dto.getAccountNumber()
@@ -187,17 +190,37 @@ public class BeneficiaryService {
 
     public BeneficiarySearchResponseDTO findUserByAccountNumber(String accountNumber) {
 
-        Account account = accountRepository
+        System.out.println("\nSEARCH BENEFICIARY HIT\n");
+
+        //invalid account number
+        Account recieverAccount = accountRepository
                 .findByAccountNo(accountNumber)
                 .orElseThrow(() ->
-                        new InvalidBeneficiaryException("Account not found"));
+                        new AccountNotFoundException("Account not found"));
 
-        User user = account.getUser();
+        User user = recieverAccount.getUser();
 
         User currentUser = userService.getCurrentUser();
 
-        if (account.getUser().getUserId().equals(currentUser.getUserId())) {
-            throw new RuntimeException("You cannot add yourself as beneficiary");
+
+        //already added account should not be searched again
+        beneficiaryRepository
+                .findByUser_UserIdAndBeneficiaryAccount_AccountId(
+                        currentUser.getUserId(),
+                        recieverAccount.getAccountId()
+                )
+                .ifPresent(b ->
+                {
+                    throw new BeneficiaryAlreadyExists(
+                            "This beneficiary has already been added to your account.");
+                });
+
+        //cant add itself
+        if(currentUser.getUserId().equals(
+                recieverAccount.getUser().getUserId())) {
+
+            throw new InvalidBeneficiaryException(
+                    "The entered account belongs to you. Please enter a different account number.");
         }
 
         return new BeneficiarySearchResponseDTO(
@@ -205,7 +228,7 @@ public class BeneficiaryService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPhoneNumber(),
-                account.getAccountNo()
+                recieverAccount.getAccountNo()
         );
     }
 }
