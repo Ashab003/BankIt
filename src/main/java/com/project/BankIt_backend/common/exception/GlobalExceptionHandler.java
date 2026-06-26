@@ -1,6 +1,7 @@
 package com.project.BankIt_backend.common.exception;
 
 import com.project.BankIt_backend.common.exception.dto.ErrorResponse;
+import com.project.BankIt_backend.common.exception.dto.UnauthorizedAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -184,4 +185,18 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ErrorResponse> unauthorizedAccess(
+            UnauthorizedAccessException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        new ErrorResponse(
+                                "UNAUTHORIZED_ACCESS",
+                                ex.getMessage()
+                        )
+                );
+    }
 }

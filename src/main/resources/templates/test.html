@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket Test</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+</head>
+
+<body>
+
+<button onclick="connect()">Connect</button>
+
+<script>
+
+    let stompClient;
+
+    function connect(){
+
+        const socket = new SockJS("http://localhost:8080/ws");
+
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({
+
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2hhYjA3IiwiaWF0IjoxNzgyNDI0NjQwLCJleHAiOjE3ODI1MTEwNDB9.TSEgwF_3vB5V_bMmOeZcY7VxMG8jcKARnf4lD8y165w"
+
+        }, function(frame){
+
+            console.log("Connected");
+
+            stompClient.subscribe("/user/queue/alerts", function(message){
+
+                console.log(message.body);
+
+            });
+
+        });
+
+    }
+
+</script>
+
+</body>
+</html>

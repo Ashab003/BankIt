@@ -1,7 +1,10 @@
 package com.project.BankIt_backend.payment;
 import com.project.BankIt_backend.account.AccountService;
 import com.project.BankIt_backend.audit.AuditLogService;
+import com.project.BankIt_backend.common.enums.NotificationType;
 import com.project.BankIt_backend.common.enums.RequestStatus;
+import com.project.BankIt_backend.notification.NotificationService;
+import com.project.BankIt_backend.notification.dto.NotificationDTO;
 import com.project.BankIt_backend.payment.dto.*;
 import com.project.BankIt_backend.account.Account;
 import com.project.BankIt_backend.transaction.Transaction;
@@ -35,6 +38,7 @@ public class PaymentService {
     private final PaymentRequestRepository paymentRequestRepository;
     private final AccountService accountService;
     private final TransactionService transactionService;
+    private final NotificationService notificationService;
 
     private void verifySenderAccount(Account senderAccount, BigDecimal amount) {
         //checking if Sender account ACTIVE
@@ -175,6 +179,15 @@ public class PaymentService {
                 "Transferred ₹" + amount +
                         " to account " +
                         receiverAccount.getAccountNo()
+        );
+
+        String notificationMessage = amount + "INR credited into your account from account no: " + senderAccount.getAccountNo();
+        notificationService.createNotification(
+                senderUser,
+                receiverUser,
+                "Money Received",
+                notificationMessage,
+                NotificationType.MONEY_RECEIVED
         );
 
         //as transaction has happened so cached data is old now so we remove the old data

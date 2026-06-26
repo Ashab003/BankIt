@@ -41,7 +41,8 @@ public class SpringSecurity {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/account/**",
-                                "/api/auth/logout"
+                                "/api/auth/logout",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
