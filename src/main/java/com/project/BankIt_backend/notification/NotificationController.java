@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/notification")
+@RequestMapping("/api/notification")
 @RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService notificationService;
 
 
-    @GetMapping
+    @GetMapping("/all-notifications")
     public ResponseEntity<List<NotificationResponseDTO>> getAllNotifications(){
 
         notificationService.loadAllNotification();
@@ -46,4 +46,6 @@ public class NotificationController {
 
         return ResponseEntity.noContent().build();
     }
+
+
 }

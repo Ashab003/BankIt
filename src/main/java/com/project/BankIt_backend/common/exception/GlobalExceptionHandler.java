@@ -1,7 +1,6 @@
 package com.project.BankIt_backend.common.exception;
 
 import com.project.BankIt_backend.common.exception.dto.ErrorResponse;
-import com.project.BankIt_backend.common.exception.dto.UnauthorizedAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -34,17 +33,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex) {
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+
+        ex.printStackTrace();
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                        new ErrorResponse(
-                                "INTERNAL_SERVER_ERROR",
-                                "An unexpected error occurred"
-                        )
-                );
+                .body(new ErrorResponse(
+                        "INTERNAL_SERVER_ERROR",
+                        ex.getMessage()
+                ));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -199,4 +197,6 @@ public class GlobalExceptionHandler {
                         )
                 );
     }
+
+
 }

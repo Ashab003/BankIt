@@ -3,6 +3,7 @@ import com.project.BankIt_backend.account.AccountService;
 import com.project.BankIt_backend.audit.AuditLogService;
 import com.project.BankIt_backend.common.enums.NotificationType;
 import com.project.BankIt_backend.common.enums.RequestStatus;
+import com.project.BankIt_backend.common.exception.UnauthorizedAccessException;
 import com.project.BankIt_backend.notification.NotificationService;
 import com.project.BankIt_backend.notification.dto.NotificationDTO;
 import com.project.BankIt_backend.payment.dto.*;
@@ -99,6 +100,15 @@ public class PaymentService {
                         dto.getDescription()
                 );
 
+        String notificationMessage = dto.getAmount() + "INR credited into your account from " + senderUser.getFullName();
+        notificationService.createNotification(
+                senderUser,
+                receiverUser,
+                "Money Received",
+                notificationMessage,
+                NotificationType.MONEY_RECEIVED
+        );
+
         return new TransactionResponseDTO(
                 transaction.getTransactionId(),
                 transaction.getSenderAccount().getAccountNo(),
@@ -181,14 +191,7 @@ public class PaymentService {
                         receiverAccount.getAccountNo()
         );
 
-        String notificationMessage = amount + "INR credited into your account from account no: " + senderAccount.getAccountNo();
-        notificationService.createNotification(
-                senderUser,
-                receiverUser,
-                "Money Received",
-                notificationMessage,
-                NotificationType.MONEY_RECEIVED
-        );
+
 
         //as transaction has happened so cached data is old now so we remove the old data
         evictUserCaches(senderUser);
@@ -234,6 +237,21 @@ public class PaymentService {
         paymentRequest.setCreatedAt(LocalDateTime.now());
 
         paymentRequestRepository.save(paymentRequest);
+
+        //notifying the requested user
+        String notificationMessage = requestingUser.getFullName()
+                + " requested ₹"
+                + amount
+                + " from you.";
+
+        notificationService.createNotification(
+                requestingUser,
+                requestedUser,
+                "Payment Request",
+                notificationMessage,
+                NotificationType.PAYMENT_REQUEST
+        );
+
 
         //this method returns user which will give us the money
         return requestedUser;
@@ -292,7 +310,7 @@ public class PaymentService {
                 .getUserId()
                 .equals(currentUser.getUserId())) {
 
-            throw new RuntimeException(
+            throw new UnauthorizedAccessException(
                     "You are not allowed to approve this request"
             );
         }
@@ -315,10 +333,23 @@ public class PaymentService {
                 LocalDateTime.now()
         );
 
-
         //saving the request
         paymentRequestRepository
                 .save(request);
+
+        //notifying the receiver
+        String notificationMessage =  currentUser.getFullName()
+                + " approved your payment request of ₹"
+                + request.getAmount();
+
+        notificationService.createNotification(
+                currentUser,
+                request.getRequester(),
+                "Request Approved",
+                notificationMessage,
+                NotificationType.PAYMENT_REQUEST_APPROVED
+        );
+
 
         return request;
     }
@@ -335,6 +366,28 @@ public class PaymentService {
                                         "Request not found"
                                 ));
 
+        //checking if request showed is still in pending status, if it is not then it is already processed
+        if(request.getStatus()
+                != RequestStatus.PENDING) {
+
+            throw new RuntimeException(
+                    "Request already processed"
+            );
+        }
+
+        User currentUser = userService.getCurrentUser();
+
+
+        //checking if request is not from the user itself
+        if(!request.getRequestedFrom()
+                .getUserId()
+                .equals(currentUser.getUserId())) {
+
+            throw new UnauthorizedAccessException(
+                    "You are not allowed to approve this request"
+            );
+        }
+
         //setting status to rejected
         request.setStatus(
                 RequestStatus.REJECTED
@@ -347,6 +400,16 @@ public class PaymentService {
         //saving the request
         paymentRequestRepository
                 .save(request);
+
+        //notifying the receiver
+        String notificationMessage =  request.getRequester().getFullName() + " has rejected your request to pay you INR" + request.getAmount();
+        notificationService.createNotification(
+                userService.getCurrentUser(),
+                request.getRequester(),
+                "Request Rejected",
+                notificationMessage,
+                NotificationType.PAYMENT_REQUEST_REJECTED
+        );
 
         return request;
     }

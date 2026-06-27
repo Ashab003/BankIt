@@ -26,6 +26,7 @@ public class SpringSecurity {
     private final AuthenticationProvider authenticationProvider;
     private final LogoutService logoutService;
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -33,9 +34,9 @@ public class SpringSecurity {
 
         http
                 .csrf(csrf -> csrf.disable())
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/actuator/**",
                                 "/api/auth/register-user",
                                 "/api/auth/login",
                                 "/swagger-ui/**",

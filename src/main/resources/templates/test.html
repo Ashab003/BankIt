@@ -19,13 +19,15 @@
 
     function connect(){
 
-        const socket = new SockJS("http://localhost:8080/ws");
+        const socket = new SockJS(
+            "https://neuron-absently-timothy.ngrok-free.dev/ws"
+        );
 
         stompClient = Stomp.over(socket);
 
         stompClient.connect({
 
-            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2hhYjA3IiwiaWF0IjoxNzgyNDI0NjQwLCJleHAiOjE3ODI1MTEwNDB9.TSEgwF_3vB5V_bMmOeZcY7VxMG8jcKARnf4lD8y165w"
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2hhYjA3IiwiaWF0IjoxNzgyNTE4NDAwLCJleHAiOjE3ODI2MDQ4MDB9.KESirrd293d6Wd-UDStJEOPvC2q1jqxFZYhRCObgC6Q"
 
         }, function(frame){
 

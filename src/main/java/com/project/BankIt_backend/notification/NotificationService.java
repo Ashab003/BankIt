@@ -1,7 +1,7 @@
 package com.project.BankIt_backend.notification;
 
 import com.project.BankIt_backend.common.enums.NotificationType;
-import com.project.BankIt_backend.common.exception.dto.UnauthorizedAccessException;
+import com.project.BankIt_backend.common.exception.UnauthorizedAccessException;
 import com.project.BankIt_backend.notification.dto.NotificationDTO;
 import com.project.BankIt_backend.notification.dto.NotificationResponseDTO;
 import com.project.BankIt_backend.user.User;
@@ -28,6 +28,8 @@ public class NotificationService {
     }
 
     public void sendPrivateMessageToUser(NotificationDTO dto, String username){
+        System.out.println("Sending WebSocket notification to: " + username);
+
         simpMessagingTemplate.convertAndSendToUser(username, "/queue/alerts", dto);
     }
 
