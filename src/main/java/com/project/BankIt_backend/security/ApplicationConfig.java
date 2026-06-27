@@ -37,7 +37,7 @@ public class ApplicationConfig {
     }
 
     //manages the AuthenticationProvider, when someone wants to log-in,
-    // we handle it to AuthenticationManager, which delegates to Authentication Provider
+    //we handle it to AuthenticationManager, which delegates to Authentication Provider
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
         return config.getAuthenticationManager();

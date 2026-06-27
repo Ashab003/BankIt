@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -35,7 +36,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
 
+        System.out.println("\nGENERIC HANDLER\n");
+
         ex.printStackTrace();
+
+        System.out.println("\nEXCEPTION TYPE = " + ex.getClass().getName() + "\n");
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -48,6 +53,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(
             BadCredentialsException ex) {
+
+        System.out.println("\nBAD CREDENTIALS HANDLER\n");
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
@@ -197,6 +204,4 @@ public class GlobalExceptionHandler {
                         )
                 );
     }
-
-
 }
