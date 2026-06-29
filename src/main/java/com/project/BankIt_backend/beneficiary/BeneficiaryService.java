@@ -196,7 +196,7 @@ public class BeneficiaryService {
         Account recieverAccount = accountRepository
                 .findByAccountNo(accountNumber)
                 .orElseThrow(() ->
-                        new AccountNotFoundException("Account not found"));
+                        new AccountNotFoundException("No account was found with the provided account number. Please check the account number and try again."));
 
         User user = recieverAccount.getUser();
 
@@ -212,7 +212,7 @@ public class BeneficiaryService {
                 .ifPresent(b ->
                 {
                     throw new BeneficiaryAlreadyExists(
-                            "This beneficiary has already been added to your account.");
+                            "Beneficiary with this account number already Exists");
                 });
 
         //cant add itself

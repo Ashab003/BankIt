@@ -143,6 +143,20 @@ public class GlobalExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> otpCooldown(
+            UsernameNotFoundException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS) //429
+                .body(
+                        new ErrorResponse(
+                                "OTP_COOLDOWN",
+                                ex.getMessage()
+                        )
+                );
+    }
+
     @ExceptionHandler(BeneficiaryUnauthorizedAccessException.class)
     public ResponseEntity<ErrorResponse> beneficiaryAccessDenied(
             BeneficiaryUnauthorizedAccessException ex
@@ -270,10 +284,68 @@ public class GlobalExceptionHandler {
             OtpCooldownException ex) {
 
         return ResponseEntity
-                .status(HttpStatus.TOO_MANY_REQUESTS) //429
+                .status(HttpStatus.NOT_FOUND) //404
                 .body(
                         new ErrorResponse(
-                                "OTP_COOLDOWN",
+                                "USER_NOT_FOUND",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+
+    @ExceptionHandler(InvalidTransferAmountException.class)
+    public ResponseEntity<ErrorResponse> invalidTransferAmount(
+            InvalidTransferAmountException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST) //400
+                .body(
+                        new ErrorResponse(
+                                "INVALID_TRANSFER_AMOUNT",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ErrorResponse> insufficientBalance(
+            InsufficientBalanceException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST) //400
+                .body(
+                        new ErrorResponse(
+                                "INSUFFICIENT_BALANCE",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+
+    @ExceptionHandler(RequestNotFoundException.class)
+    public ResponseEntity<ErrorResponse> insufficientBalance(
+            RequestNotFoundException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND) //404
+                .body(
+                        new ErrorResponse(
+                                "REQUEST_NOT_FOUND",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(RequestAlreadyProcessedException.class)
+    public ResponseEntity<ErrorResponse> requestAlreadyProcessed(
+            RequestAlreadyProcessedException ex
+    ){
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT) //409
+                .body(
+                        new ErrorResponse(
+                                "REQUEST_NOT_FOUND",
                                 ex.getMessage()
                         )
                 );

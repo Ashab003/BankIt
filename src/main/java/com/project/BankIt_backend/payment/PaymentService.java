@@ -3,7 +3,7 @@ import com.project.BankIt_backend.account.AccountService;
 import com.project.BankIt_backend.audit.AuditLogService;
 import com.project.BankIt_backend.common.enums.NotificationType;
 import com.project.BankIt_backend.common.enums.RequestStatus;
-import com.project.BankIt_backend.common.exception.UnauthorizedAccessException;
+import com.project.BankIt_backend.common.exception.*;
 import com.project.BankIt_backend.notification.NotificationService;
 import com.project.BankIt_backend.notification.dto.NotificationDTO;
 import com.project.BankIt_backend.payment.dto.*;
@@ -21,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+
+import java.lang.IllegalArgumentException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,34 +46,34 @@ public class PaymentService {
     private void verifySenderAccount(Account senderAccount, BigDecimal amount) {
         //checking if Sender account ACTIVE
         if (senderAccount == null) {
-            throw new RuntimeException("Sender account not found");
+            throw new AccountNotFoundException("Sender account not found");
         }
 
         //checking if Receiver account ACTIVE
         if (!"ACTIVE".equalsIgnoreCase(senderAccount.getStatus())) {
-            throw new RuntimeException("Sender account is not active");
+            throw new AccountInactiveException("Sender account is not active");
         }
 
         //checking if amount entered is correct
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Invalid transfer amount");
+            throw new InvalidTransferAmountException("Invalid transfer amount");
         }
 
         //checking if sender has enough money to send
         if (senderAccount.getBalance().compareTo(amount) < 0) {
-            throw new RuntimeException("Insufficient balance");
+            throw new InsufficientBalanceException("Insufficient funds to complete this transaction.");
         }
     }
 
     private void verifyReceiverAccount(Account receiverAccount) {
         //checking if receiverAccount  exists
         if (receiverAccount == null) {
-            throw new RuntimeException("Receiver account not found");
+            throw new AccountNotFoundException("Receiver account not found");
         }
 
         //checking if Receiver account ACTIVE
         if (!"ACTIVE".equalsIgnoreCase(receiverAccount.getStatus())) {
-            throw new RuntimeException("Receiver account is not active");
+            throw new AccountInactiveException("Receiver account is not active");
         }
     }
 
@@ -153,7 +155,7 @@ public class PaymentService {
         if(senderUser.getUserId()
                 .equals(receiverUser.getUserId())) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Cannot transfer money to yourself"
             );
         }
@@ -289,7 +291,7 @@ public class PaymentService {
                 paymentRequestRepository
                         .findById(requestId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new RequestNotFoundException(
                                         "Request not found"
                                 ));
 
@@ -297,7 +299,7 @@ public class PaymentService {
         if(request.getStatus()
                 != RequestStatus.PENDING) {
 
-            throw new RuntimeException(
+            throw new RequestAlreadyProcessedException(
                     "Request already processed"
             );
         }
@@ -362,7 +364,7 @@ public class PaymentService {
                 paymentRequestRepository
                         .findById(requestId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new RequestNotFoundException(
                                         "Request not found"
                                 ));
 
@@ -370,7 +372,7 @@ public class PaymentService {
         if(request.getStatus()
                 != RequestStatus.PENDING) {
 
-            throw new RuntimeException(
+            throw new RequestAlreadyProcessedException(
                     "Request already processed"
             );
         }
