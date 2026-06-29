@@ -1,14 +1,13 @@
 package com.project.BankIt_backend.auth;
 
-import com.project.BankIt_backend.auth.dto.LoginRequestDTO;
-import com.project.BankIt_backend.auth.dto.LoginResponseDTO;
-import com.project.BankIt_backend.auth.dto.RegisterRequestDTO;
+import com.project.BankIt_backend.auth.dto.*;
 import com.project.BankIt_backend.user.UserService;
 import com.project.BankIt_backend.user.dto.ChangePasswordRequestDTO;
 import com.project.BankIt_backend.user.dto.ChangePasswordResponseDTO;
 import com.project.BankIt_backend.user.dto.FullNameResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -60,6 +59,27 @@ public class AuthController {
     public ResponseEntity<FullNameResponseDTO> currentUser() {
         return ResponseEntity.ok(
                 userService.getUserFullName()
+        );
+    }
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<SendOtpResponseDTO> forgotPassword(@RequestBody SendOtpRequestDTO sendOtpRequestDTO) {
+        return ResponseEntity.ok(authService.sendOTP(sendOtpRequestDTO));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<VerifyOtpResponseDTO> verifyOtp(@RequestBody VerifyOtpRequestDTO verifyOtpRequestDTO){
+        return ResponseEntity.ok(
+                authService.verifyOtp(verifyOtpRequestDTO)
+        );
+    }
+
+    @PutMapping("/forgot-password/reset")
+    public ResponseEntity<ResetPasswordResponseDTO> changePassword(
+            @Valid @RequestBody ResetPasswordRequestDTO request) {
+
+        return ResponseEntity.ok(
+                authService.resetPassword(request)
         );
     }
 

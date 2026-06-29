@@ -36,8 +36,12 @@ public class SpringSecurity {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/mail/**",
                                 "/actuator/**",
                                 "/api/auth/register-user",
+                                "api/auth/send-otp",
+                                "/api/auth/verify-otp",
+                                "/api/auth/forgot-password/reset",
                                 "/api/auth/login",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",

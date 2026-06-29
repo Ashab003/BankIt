@@ -1,15 +1,13 @@
 package com.project.BankIt_backend.auth;
 
-import com.project.BankIt_backend.auth.dto.LoginRequestDTO;
-import com.project.BankIt_backend.auth.dto.LoginResponseDTO;
-import com.project.BankIt_backend.auth.dto.RegisterRequestDTO;
-import com.project.BankIt_backend.common.exception.BadCredentialsException;
-import com.project.BankIt_backend.common.exception.InvalidRole;
+import com.project.BankIt_backend.auth.dto.*;
+import com.project.BankIt_backend.common.enums.OTPVerificationStatus;
+import com.project.BankIt_backend.common.exception.*;
+import com.project.BankIt_backend.email.EmailService;
 import com.project.BankIt_backend.user.Role;
 import com.project.BankIt_backend.user.User;
 import com.project.BankIt_backend.common.enums.AuditAction;
 import com.project.BankIt_backend.common.enums.TokenType;
-import com.project.BankIt_backend.common.exception.AccountInactiveException;
 import com.project.BankIt_backend.account.AccountRepository;
 import com.project.BankIt_backend.user.RoleRepository;
 import com.project.BankIt_backend.user.UserRepository;
@@ -22,6 +20,7 @@ import com.project.BankIt_backend.user.dto.ChangePasswordResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,9 +30,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.lang.IllegalArgumentException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +50,8 @@ public class AuthenticationService {
     private final UserService userService;
     private final TokenRepository tokenRepository;
     private final JwtService jwtService;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final EmailService emailService;
 
     //FOR REGULAR USER
     public Optional<User> registerUser(RegisterRequestDTO userDTO) {
@@ -249,6 +252,76 @@ public class AuthenticationService {
         );
     }
 
+    public SendOtpResponseDTO sendOTP(SendOtpRequestDTO request) {
+
+        String mail = request.getEmail();
+
+        //checking if mail exists
+        if(!userRepository.findByEmail(mail).isPresent()) {
+            throw new MailNotFound("Entered email is incorrect");
+        }
+
+        //cooldown for resending OTP
+        String cooldownKey = "forgot-password:cooldown:" + mail;
+
+        Long timeLeft = stringRedisTemplate.getExpire(
+                cooldownKey,
+                TimeUnit.SECONDS
+        );
+
+        if (timeLeft != null && timeLeft > 0) {
+            throw new OtpCooldownException(
+                    "Please wait " + timeLeft +
+                            " seconds before requesting another OTP."
+            );
+        }
+        //generate otp
+        String OTP = generateOTP();
+
+        //store the otp in redis
+        String key = "forgot-password:" + mail;
+        stringRedisTemplate.opsForValue().set(
+                key,
+                OTP,
+                5,
+                TimeUnit.MINUTES
+        );
+
+        //storing cooldown keys
+        stringRedisTemplate.opsForValue().set(
+                cooldownKey,
+                "ACTIVE",
+                30,
+                TimeUnit.SECONDS
+        );
+
+        //send mail for otp
+        try {
+
+            // Send OTP email
+            emailService.sendMailForOtp(
+                    mail,
+                    OTP
+            );
+
+        } catch (Exception e) {
+
+            //Removing OTP and cool down since the email was not delivered
+            stringRedisTemplate.delete(key);
+            stringRedisTemplate.delete(cooldownKey);
+
+            throw new EmailSendingException(
+                    "Unable to send OTP. Please try again."
+            );
+        }
+
+        return new SendOtpResponseDTO(
+                "If an account with this email exists, an OTP has been sent."
+        );
+    }
+
+
+
     private void saveUserToken(String jwtToken, User user) {
         var token = Token.builder()
                 .token(jwtToken)
@@ -276,6 +349,102 @@ public class AuthenticationService {
         tokenRepository.saveAll(validToken);
 
     }
+
+    //generates 4 digit otp
+    public static String generateOTP() {
+        int randomPin   =(int) (Math.random()*9000)+1000;
+        String otp  = String.valueOf(randomPin);
+        return otp;
+    }
+
+    //validation otp
+    public VerifyOtpResponseDTO verifyOtp(VerifyOtpRequestDTO requestDTO) {
+
+        String email = requestDTO.getEmail();
+        String key = "forgot-password:" + email;
+
+        String storedOtp = stringRedisTemplate.opsForValue().get(key);
+
+        if (storedOtp == null) {
+            throw new OtpExpiredException(
+                    "OTP has expired. Please request a new one."
+            );
+        }
+
+        String enteredOtp = requestDTO.getOtp();
+
+        //checking if otp stored in redis cache matches the entered otp
+        if (!storedOtp.equals(enteredOtp)){
+            return new VerifyOtpResponseDTO(
+                    OTPVerificationStatus.INVALID
+            );
+        }
+
+        //otp is matched so we return that it is valid, so we remove that otp from redis cache so it will not be used again
+        stringRedisTemplate.delete(key);
+
+        //since otp is matched a new session to change
+        //password is generated so only when this session is there password can be changed
+        String resetKey = "reset-session:" + email;
+        stringRedisTemplate.opsForValue().set(
+                resetKey, "VERIFIED", 5, TimeUnit.MINUTES )
+        ;
+
+        return new VerifyOtpResponseDTO(
+                OTPVerificationStatus.VALID
+        );
+    }
+
+    public ResetPasswordResponseDTO resetPassword(ResetPasswordRequestDTO requestDTO) {
+
+        //checking if otp is verified
+        String resetKey = "reset-session:" + requestDTO.getEmail();
+
+        if (stringRedisTemplate.opsForValue().get(resetKey) == null) {
+            throw new InvalidOtpException("OTP verification required.");
+        }
+
+        //finding user through email
+        User user = userRepository.findByEmail(requestDTO.getEmail())
+                .orElseThrow(() -> new MailNotFound("Email not found"));
+
+        //new password should be the new password
+        if (passwordEncoder.matches(
+                requestDTO.getNewPassword(),
+                user.getPassword())) {
+
+            throw new IllegalArgumentException(
+                    "New password must be different from current password"
+            );
+        }
+
+        //updating password
+        user.setPassword(
+                passwordEncoder.encode(requestDTO.getNewPassword())
+        );
+
+        userRepository.save(user);
+
+        //as the password is reset delete the reset password session
+        stringRedisTemplate.delete(resetKey);
+
+        //for safety removing the token of user
+        revokeAllUserToken(user);
+
+        //logging that password is changed
+        auditLogService.logAction(
+                user,
+                AuditAction.PASSWORD_CHANGED,
+                LocalDateTime.now(),
+                "User changed password successfully"
+        );
+
+        return new ResetPasswordResponseDTO(
+                "Password updated successfully"
+        );
+    }
+
+
 }
 
 

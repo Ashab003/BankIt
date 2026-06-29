@@ -204,4 +204,78 @@ public class GlobalExceptionHandler {
                         )
                 );
     }
+
+    @ExceptionHandler(MailNotFound.class)
+    public ResponseEntity<ErrorResponse> unauthorizedAccess(
+            MailNotFound ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
+                        new ErrorResponse(
+                                "NOT_FOUND",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(EmailSendingException.class)
+    public ResponseEntity<ErrorResponse> emailSendingException(
+            EmailSendingException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                        new ErrorResponse(
+                                "EMAIL_SENDING_FAILED",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(InvalidOtpException.class)
+    public ResponseEntity<ErrorResponse> invalidOtp(
+            InvalidOtpException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                        new ErrorResponse(
+                                "INVALID_OTP",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(OtpExpiredException.class)
+    public ResponseEntity<ErrorResponse> invalidOtp(
+            OtpExpiredException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.GONE)
+                .body(
+                        new ErrorResponse(
+                                "OTP_EXPIRED",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(OtpCooldownException.class)
+    public ResponseEntity<ErrorResponse> otpCooldown(
+            OtpCooldownException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS) //429
+                .body(
+                        new ErrorResponse(
+                                "OTP_COOLDOWN",
+                                ex.getMessage()
+                        )
+                );
+    }
 }

@@ -1,4 +1,16 @@
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ashab.project.bot@gmail.com
+    password: tnul ibuw dmsb epjo
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   application:
     name: BankIt_backend
   datasource:
