@@ -4,8 +4,8 @@ import com.project.BankIt_backend.audit.AuditLogService;
 import com.project.BankIt_backend.common.enums.NotificationType;
 import com.project.BankIt_backend.common.enums.RequestStatus;
 import com.project.BankIt_backend.common.exception.*;
-import com.project.BankIt_backend.fraud_detection.FraudAlert;
-import com.project.BankIt_backend.fraud_detection.FraudDetectionService;
+import com.project.BankIt_backend.kafka_.event.TransactionCompletedEvent;
+import com.project.BankIt_backend.kafka_.producer.TransactionEventProducer;
 import com.project.BankIt_backend.notification.NotificationService;
 import com.project.BankIt_backend.notification.dto.NotificationDTO;
 import com.project.BankIt_backend.payment.dto.*;
@@ -44,7 +44,7 @@ public class PaymentService {
     private final AccountService accountService;
     private final TransactionService transactionService;
     private final NotificationService notificationService;
-    private final FraudDetectionService fraudDetectionService;
+    private final TransactionEventProducer transactionEventProducer;
 
     private void verifySenderAccount(Account senderAccount, BigDecimal amount) {
         //checking if Sender account ACTIVE
@@ -186,7 +186,7 @@ public class PaymentService {
                         description
                 );
 
-        //loggint the action of money transfer
+        //logging the action of money transfer
         auditLogService.logAction(
                 senderUser,
                 AuditAction.MONEY_TRANSFERRED,
@@ -196,7 +196,13 @@ public class PaymentService {
                         receiverAccount.getAccountNo()
         );
 
-        fraudDetectionService.analyze(transaction);
+        //since transaction is done we pass all other things which are supposed to happen after transaction,
+        // to Kafka to consume
+        transactionEventProducer.publishTransaction(
+                TransactionCompletedEvent.builder()
+                        .transactionId(transaction.getTransactionId())
+                        .build()
+        );
 
         //as transaction has happened so cached data is old now so we remove the old data
         evictUserCaches(senderUser);
