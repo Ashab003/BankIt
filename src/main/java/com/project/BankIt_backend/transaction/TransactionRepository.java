@@ -84,4 +84,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("endDate") LocalDateTime endDate
     );
 
+    List<Transaction> findTop10BySenderAccountOrderByTransactionDateDesc(Account senderAccount);
+
+    List<Transaction> findBySenderAccountAndTransactionDateAfter(Account account, LocalDateTime time);
 }
