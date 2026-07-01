@@ -105,14 +105,6 @@ public class PaymentService {
                         dto.getDescription()
                 );
 
-        String notificationMessage = dto.getAmount() + "INR credited into your account from " + senderUser.getFullName();
-        notificationService.createNotification(
-                senderUser,
-                receiverUser,
-                "Money Received",
-                notificationMessage,
-                NotificationType.MONEY_RECEIVED
-        );
 
         return new TransactionResponseDTO(
                 transaction.getTransactionId(),
@@ -196,11 +188,18 @@ public class PaymentService {
                         receiverAccount.getAccountNo()
         );
 
+        String notificationMessage = amount + "INR credited into your account from " + senderUser.getFullName();
+
         //since transaction is done we pass all other things which are supposed to happen after transaction,
         // to Kafka to consume
         transactionEventProducer.publishTransaction(
                 TransactionCompletedEvent.builder()
                         .transactionId(transaction.getTransactionId())
+                        .senderId(senderUser.getUserId())
+                        .receiverId(receiverUser.getUserId())
+                        .title("Money Received")
+                        .notificationMessage(notificationMessage)
+                        .notificationType(NotificationType.MONEY_RECEIVED)
                         .build()
         );
 
@@ -255,9 +254,10 @@ public class PaymentService {
                 + amount
                 + " from you.";
 
+
         notificationService.createNotification(
-                requestingUser,
-                requestedUser,
+                requestingUser.getUserId(),
+                requestedUser.getUserId(),
                 "Payment Request",
                 notificationMessage,
                 NotificationType.PAYMENT_REQUEST
@@ -354,8 +354,8 @@ public class PaymentService {
                 + request.getAmount();
 
         notificationService.createNotification(
-                currentUser,
-                request.getRequester(),
+                currentUser.getUserId(),
+                request.getRequester().getUserId(),
                 "Request Approved",
                 notificationMessage,
                 NotificationType.PAYMENT_REQUEST_APPROVED
@@ -415,8 +415,8 @@ public class PaymentService {
         //notifying the receiver
         String notificationMessage =  request.getRequester().getFullName() + " has rejected your request to pay you INR" + request.getAmount();
         notificationService.createNotification(
-                userService.getCurrentUser(),
-                request.getRequester(),
+                userService.getCurrentUser().getUserId(),
+                request.getRequester().getUserId(),
                 "Request Rejected",
                 notificationMessage,
                 NotificationType.PAYMENT_REQUEST_REJECTED

@@ -21,8 +21,10 @@ public class FraudDetectionConsumer {
     private final TransactionRepository transactionRepository;
     private final FraudDetectionService fraudDetectionService;
 
-    @KafkaListener(topics = TRANSACTION_TOPIC)
-    @Transactional
+    @KafkaListener(
+            topics = TRANSACTION_TOPIC,
+            groupId = "fraud-detection-group"
+    )
     public void consume(TransactionCompletedEvent transactionCompletedEvent) {
 
         Long transactionId = transactionCompletedEvent.getTransactionId();
@@ -33,7 +35,7 @@ public class FraudDetectionConsumer {
                         .orElseThrow(() ->
                                 new IllegalArgumentException("Transaction not found"));
 
-        fraudDetectionService.analyze(transaction);
+        fraudDetectionService.analyze(transactionId);
 
     }
 }

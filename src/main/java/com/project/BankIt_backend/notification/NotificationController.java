@@ -1,6 +1,7 @@
 package com.project.BankIt_backend.notification;
 
 
+import com.project.BankIt_backend.notification.dto.NotificationCountDTO;
 import com.project.BankIt_backend.notification.dto.NotificationDTO;
 import com.project.BankIt_backend.notification.dto.NotificationResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -47,5 +48,8 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @GetMapping("/notification-count")
+    public ResponseEntity<NotificationCountDTO> getNotificationCount(){
+        return ResponseEntity.ok(notificationService.getUnreadNotificationCount());
+    }
 }

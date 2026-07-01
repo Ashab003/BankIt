@@ -9,5 +9,7 @@ public enum NotificationType {
 
     PAYMENT_REQUEST_REJECTED,
 
+    FRAUD_ALERT,
+
     SYSTEM
 }

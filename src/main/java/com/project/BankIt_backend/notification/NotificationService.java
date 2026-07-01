@@ -2,6 +2,7 @@ package com.project.BankIt_backend.notification;
 
 import com.project.BankIt_backend.common.enums.NotificationType;
 import com.project.BankIt_backend.common.exception.UnauthorizedAccessException;
+import com.project.BankIt_backend.notification.dto.NotificationCountDTO;
 import com.project.BankIt_backend.notification.dto.NotificationDTO;
 import com.project.BankIt_backend.notification.dto.NotificationResponseDTO;
 import com.project.BankIt_backend.user.User;
@@ -33,6 +34,14 @@ public class NotificationService {
         simpMessagingTemplate.convertAndSendToUser(username, "/queue/alerts", dto);
     }
 
+    public NotificationCountDTO getUnreadNotificationCount(){
+
+        User currentUser = userService.getCurrentUser();
+
+        return new NotificationCountDTO(notificationRepository.countByReceiverAndIsReadFalse(currentUser));
+
+    }
+
     public void saveNotification(
             User sender,
             User receiver,
@@ -55,12 +64,15 @@ public class NotificationService {
     }
 
     public void createNotification(
-            User sender,
-            User receiver,
+            Long senderId,
+            Long receiverId,
             String title,
             String message,
             NotificationType type
     ) {
+
+        User sender = userService.getUserById(senderId);
+        User receiver = userService.getUserById(receiverId);
 
         saveNotification(sender, receiver, title, message, type);
 

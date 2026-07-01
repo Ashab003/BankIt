@@ -86,6 +86,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("endDate") LocalDateTime endDate
     );
 
+    @Query("""
+        SELECT t
+        FROM Transaction t
+        JOIN FETCH t.senderAccount
+        JOIN FETCH t.receiverAccount
+        WHERE t.transactionId = :id
+    """)
+    Optional<Transaction> findByIdWithAccounts(Long id);
+
     List<Transaction> findTop10BySenderAccountOrderByTransactionDateDesc(Account senderAccount);
 
     List<Transaction> findBySenderAccountAndTransactionDateAfter(Account account, LocalDateTime time);

@@ -31,7 +31,12 @@ public class FraudDetectionService {
     private static final long RAPID_TRANSFER_WINDOW_MINUTES = 10;
     private static final BigDecimal UNUSUAL_AMOUNT_MULTIPLIER = new BigDecimal("3");
 
-    public void analyze(Transaction transaction) {
+    public void analyze(Long id) {
+
+        Transaction transaction =
+                transactionRepository.findByIdWithAccounts(id)
+                        .orElseThrow();
+
         checkHighValueTransaction(transaction);
 
         checkRapidTransfers(transaction);
