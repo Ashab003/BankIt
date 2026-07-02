@@ -102,7 +102,7 @@ public class UserService {
         return userRepository.findByUsername(usernameOrEmail)
                 .or(() -> userRepository.findByEmail(usernameOrEmail))
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new UsernameNotFoundException(
                                 "User not found: " + usernameOrEmail
                         ));
     }

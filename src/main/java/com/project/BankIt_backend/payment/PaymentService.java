@@ -91,7 +91,7 @@ public class PaymentService {
         //get the receiver
         User receiverUser =
                 userService
-                        .getUserByUsernameOrEmail(
+                        .getUserByPhoneNumberOrEmail(
                                 dto.getRecipientIdentifier()
                         );
 
