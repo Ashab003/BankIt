@@ -24,7 +24,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import java.lang.IllegalArgumentException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -150,7 +149,7 @@ public class PaymentService {
         if(senderUser.getUserId()
                 .equals(receiverUser.getUserId())) {
 
-            throw new IllegalArgumentException(
+            throw new RequestingYourselfException(
                     "Cannot transfer money to yourself"
             );
         }
@@ -218,21 +217,21 @@ public class PaymentService {
         BigDecimal amount = requestDTO.getAmount();
         String note = requestDTO.getNote();
 
-        User requestedUser = userService.getUserByUsernameOrEmail(requestedTo);
+        User requestedUser = userService.getUserByPhoneNumberOrEmail(requestedTo);
         User requestingUser = userService.getCurrentUser();
 
 
         //just checking the users here
         if(requestedUser == null){
-            throw new IllegalArgumentException("User not found");
+            throw new UsernameNotFoundException("User not found");
         }
 
         if(requestingUser.getUserId().equals(requestedUser.getUserId())){
-            throw new IllegalArgumentException("You cannot request money from yourself");
+            throw new RequestingYourselfException("You cannot request money from yourself");
         }
 
         if(amount.compareTo(BigDecimal.ZERO) <= 0){
-            throw new IllegalArgumentException("Amount must be greater than zero");
+            throw new InvalidAmountException("Amount must be greater than zero");
         }
 
 

@@ -97,20 +97,6 @@ public class GlobalExceptionHandler {
                 );
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> illegalArgument(
-            IllegalArgumentException ex
-    ){
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(
-                        new ErrorResponse(
-                                "BAD_REQUEST",
-                                ex.getMessage()
-                        )
-                );
-    }
 
     @ExceptionHandler(InvalidRole.class)
     public ResponseEntity<ErrorResponse> invalidRole(
@@ -143,9 +129,9 @@ public class GlobalExceptionHandler {
                 );
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
+    @ExceptionHandler(OtpCooldownException.class)
     public ResponseEntity<ErrorResponse> otpCooldown(
-            UsernameNotFoundException ex) {
+            OtpCooldownException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.TOO_MANY_REQUESTS) //429
@@ -279,9 +265,9 @@ public class GlobalExceptionHandler {
                 );
     }
 
-    @ExceptionHandler(OtpCooldownException.class)
-    public ResponseEntity<ErrorResponse> otpCooldown(
-            OtpCooldownException ex) {
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> userNotfound(
+            UsernameNotFoundException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND) //404
@@ -346,6 +332,36 @@ public class GlobalExceptionHandler {
                 .body(
                         new ErrorResponse(
                                 "REQUEST_NOT_FOUND",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+
+    @ExceptionHandler(RequestingYourselfException.class)
+    public ResponseEntity<ErrorResponse> handleRequestingYourselfException(
+            RequestingYourselfException ex
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT) // 409
+                .body(
+                        new ErrorResponse(
+                                "CANT_REQUEST_YOURSELF",
+                                ex.getMessage()
+                        )
+                );
+    }
+
+
+    @ExceptionHandler(InvalidAmountException.class)
+    public ResponseEntity<ErrorResponse> inappropriateAmount(
+            InvalidAmountException ex
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST) // 400
+                .body(
+                        new ErrorResponse(
+                                "INVALID_AMOUNT",
                                 ex.getMessage()
                         )
                 );

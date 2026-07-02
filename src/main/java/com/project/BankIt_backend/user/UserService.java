@@ -1,5 +1,6 @@
 package com.project.BankIt_backend.user;
 
+import com.project.BankIt_backend.common.exception.UsernameNotFoundException;
 import com.project.BankIt_backend.user.dto.FullNameResponseDTO;
 import com.project.BankIt_backend.user.dto.UpdateUserDTO;
 import com.project.BankIt_backend.common.enums.AuditAction;
@@ -103,6 +104,16 @@ public class UserService {
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "User not found: " + usernameOrEmail
+                        ));
+    }
+
+    public User getUserByPhoneNumberOrEmail(String PhoneNumberOrEmail) {
+
+        return userRepository.findByPhoneNumber(PhoneNumberOrEmail)
+                .or(() -> userRepository.findByEmail(PhoneNumberOrEmail))
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                "User not found"
                         ));
     }
 
